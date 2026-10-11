@@ -14,6 +14,15 @@
 
 English: Release 1.1.0 recognizes complete v2 instructions in JSON fences and adds missed-plan diagnostics with explicit, confirmation-only recovery. Protocol v2, existing v2 state and historical release files are retained. A GitHub Pages website detects the browser's preferred language and remembers a manual override. The bilingual README keeps manual navigation. Automated checks and pending installed-extension acceptance are recorded separately.
 
+### 1.1.0 远端发布结果
+
+- 工程提交 `adc4464af2a1592a8d9fe1d5b2b194a0c1f7d01c` 已推送到公共仓库 main；package、锁文件、manifest 与安装包版本为 1.1.0。
+- [v1.1.0 测试版](https://github.com/dickenson258/GptWorkBot/releases/tag/v1.1.0) 已发布，安装包和首页 ZIP 均为 uploaded，大小与 SHA-256 和本地一致。
+- [Pages 部署](https://github.com/dickenson258/GptWorkBot/actions/runs/38106107237) 完成且 conclusion=success，对应同一工程提交。[展示页](https://dickenson258.github.io/GptWorkBot/) 在线访问成功，首次中文、切换英文与预览图片加载已核对；README 和仓库 About 均链接展示页。
+- 安装包 SHA-256：`dd85732e1dfe63ecc7573c0d53d3aba035673e1a4f9b7bb9107657046ec42920`。
+- 首页 ZIP SHA-256：`ba2fb52e26742219c32bb180d8df729512409383b8e366dcd5da96d62da92936`。
+- 16 个测试文件、302 项自动化测试、类型检查、构建与安装包校验通过。真实插件任务送达仍需重载后人工验收，没有增加新的 ChatGPT 发送或验收记录。
+
 ## 1.0.0 首次公开发布记录
 
 2026-10-11 · 产品版本 **1.0.0** · 仓库 `dickenson258/GptWorkBot`。
