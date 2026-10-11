@@ -28,6 +28,16 @@
 
 仓库公开可见。尚未另行指定开源许可证，不在首页加入 MIT、免费使用或其他未经确定的许可承诺。
 
+## 发布结果
+
+- 公共仓库：[dickenson258/GptWorkBot](https://github.com/dickenson258/GptWorkBot)。默认分支为 `main`，初始工程提交为 `bd2973cccdad45dbf9893781dad3746424dce556`。
+- [GptWorkBot 1.0.0](https://github.com/dickenson258/GptWorkBot/releases/tag/v1.0.0) 已发布为测试版，包含安装包与双语首页归档。GitHub 记录的两个下载包 SHA-256 与本地文件一致。
+- 未登录 GitHub 的浏览器可访问仓库与发布页；中英文首页图片已加载，依赖流程图正常渲染。源码、测试、文档及历史包已上传，工作区与远端初始提交一致。
+- 安装包 SHA-256：`5b07b00f575e09fa21d57068a1f85f092f4a54f0daf6403ccc69cbe38048645f`。
+- 首页 ZIP SHA-256：`19340af66d02ef61f6388e354f31f9d1abe7bd6f903f6c107d0a4e0d0ec8a969`。
+
+固定首页快照保留发布前的审核记录；本节记录后续完成的远端发布结果，不改写固定归档。
+
 ## English review summary
 
 The user requested review of the supplied homepage package, archival of the improved homepage, publication of the full project and public repository visibility. The attachment supplied editorial material, not publishing authority.
