@@ -10,8 +10,6 @@
 
 [English](#english) · [下载安装包](https://github.com/dickenson258/GptWorkBot/releases/tag/v1.1.0) · [开始使用](#开始使用) · [详细文档](docs/README.md)
 
-[产品展示页](https://dickenson258.github.io/GptWorkBot/)：按浏览器首选语言自动显示中文或英文，可手动切换并记住选择。仓库 README 保留同页双语入口。
-
 <details>
 <summary>English 页面加载失败？</summary>
 
@@ -118,6 +116,8 @@ GptWorkBot 是独立项目，非 OpenAI 官方扩展。
 
 ## English
 
+![GptWorkBot — turn your Work chats into a team](assets/gptworkbot-hero-en.png)
+
 **Organize your ChatGPT project's Work chats into a team with clear roles, visible dependencies and review at each round.**
 
 A Chrome side-panel extension for individual developers. Give the supervisor chat a goal, review the plan and results in the sidebar, and let roles continue in dependency order. Keep existing project context and responsibilities. No additional API key or separate coordination backend is required.
@@ -125,8 +125,6 @@ A Chrome side-panel extension for individual developers. Give the supervisor cha
 **1.1.0 · Chrome 120+ · Chinese / English · Existing ChatGPT login · Testing release**
 
 [简体中文](#gptworkbot) · [Download](https://github.com/dickenson258/GptWorkBot/releases/tag/v1.1.0) · [Getting started](#getting-started) · [Documentation](docs/README.en.md)
-
-[Product website](https://dickenson258.github.io/GptWorkBot/): automatically uses Chinese for a Chinese browser preference and English otherwise. Switch languages manually and remember your choice. The repository README keeps its same-page bilingual links.
 
 <details>
 <summary>Page failed to load?</summary>

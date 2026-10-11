@@ -16,9 +16,9 @@ A Chrome Manifest V3 extension for individual developers. Coordinate independent
 
 The main GitHub homepage switches to English through a same-page anchor, avoiding a separate file-preview request. The root `README.en.md` is the English source. After editing it, run `npm run docs:sync-homepage` and verify synchronization with `npm run docs:check-homepage`. Historical snapshots stay unchanged.
 
-### GitHub Pages website
+### Optional website source
 
-The [product website](https://dickenson258.github.io/GptWorkBot/) lives in `website/`. Run `npm run build:pages` to create a separate `pages-dist/` artifact; extension background code, task storage and native-chat files are excluded. `.github/workflows/pages.yml` deploys changes to the page, assets or product version on main and supports manual dispatch. GitHub Pages uses GitHub Actions as its publishing source.
+Promotion now uses the bilingual repository README. At the user's request, the separate GitHub Pages site and automatic deployment workflow were withdrawn, and the repository's About website address was cleared. Optional source remains in `website/`; `npm run build:pages` creates a local `pages-dist/` artifact containing only page files and allowlisted display assets. It does not publish a website.
 
 Language precedence is `?lang=zh` / `?lang=en`, a saved manual preference, then the browser's primary language. Chinese language tags (including zh-CN, zh-TW and zh-HK) select Simplified Chinese; other languages select English. “Auto” clears the override. Switching still works with blocked storage. Without JavaScript, English content and a Chinese documentation link remain available. Detection runs in the visitor's browser.
 

@@ -16,9 +16,9 @@
 
 GitHub 主首页的 English 入口使用同页锚点，避免依赖单独的文件预览请求。英文正文源文件为根目录 `README.en.md`；修改后运行 `npm run docs:sync-homepage`，以 `npm run docs:check-homepage` 检查主首页的英文区段是否同步。固定版本归档保留原样。
 
-### GitHub Pages 展示页
+### 备用展示页源码
 
-[展示页](https://dickenson258.github.io/GptWorkBot/) 源码在 `website/`。运行 `npm run build:pages` 生成独立的 `pages-dist/`，不会将扩展后台、任务存储或原生会话文件发布到网页。`.github/workflows/pages.yml` 在 main 的页面、素材或产品版本变更后自动部署，也支持手动运行。Pages 使用 GitHub Actions 作为发布源。
+当前宣传入口为仓库 README 的中英文区段。应用户要求，独立 GitHub Pages 展示页及自动部署工作流已撤回，仓库 About 的网站地址恢复为空。备用源码保留在 `website/`；运行 `npm run build:pages` 可生成本地 `pages-dist/`，只包含页面与允许的展示素材。该命令不会发布网页。
 
 语言优先级为 URL 的 `?lang=zh`／`?lang=en`、浏览器保存的手动选择、浏览器首选语言。首选 `zh`（含 zh-CN、zh-TW、zh-HK）显示简体中文，其他语言显示英文；“自动”清除手动选择。禁用本地存储仍可切换，禁用 JavaScript 则保留英文内容与中文文档入口。语言检测仅在浏览器执行。
 

@@ -6,7 +6,8 @@ const chinese = await readFile('README.md', 'utf8');
 const english = await readFile('README.en.md', 'utf8');
 // Keep the standalone English README as the source; reuse its body on the main
 // homepage so switching languages does not request GitHub's file-preview page.
-const body = english.replace(/^!\[[^\]]*\]\([^\n]*\)\n\n# GptWorkBot\n\n/, '');
+// Preserve the English banner when copying the body below the English anchor.
+const body = english.replace(/^(!\[[^\]]*\]\([^\n]*\))\n\n# GptWorkBot\n\n/, '$1\n\n');
 if (body === english) throw new Error('Standalone English homepage header was not found.');
 const inline = body
   .replace('[简体中文](https://github.com/dickenson258/GptWorkBot#readme)', '[简体中文](#gptworkbot)')

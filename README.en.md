@@ -1,4 +1,4 @@
-![GptWorkBot — bring project roles together](assets/gptworkbot-hero.png)
+![GptWorkBot — turn your Work chats into a team](assets/gptworkbot-hero-en.png)
 
 # GptWorkBot
 
@@ -9,8 +9,6 @@ A Chrome side-panel extension for individual developers. Give the supervisor cha
 **1.1.0 · Chrome 120+ · Chinese / English · Existing ChatGPT login · Testing release**
 
 [简体中文](https://github.com/dickenson258/GptWorkBot#readme) · [Download](https://github.com/dickenson258/GptWorkBot/releases/tag/v1.1.0) · [Getting started](#getting-started) · [Documentation](docs/README.en.md)
-
-[Product website](https://dickenson258.github.io/GptWorkBot/): automatically uses Chinese for a Chinese browser preference and English otherwise. Switch languages manually and remember your choice. The repository README keeps its same-page bilingual links.
 
 <details>
 <summary>Page failed to load?</summary>

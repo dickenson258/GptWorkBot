@@ -313,9 +313,9 @@ Acceptance criteria:
 - Draft prerequisites are editable with automatic mappings and cycle validation; approved relationships are fixed. Unlocking does not request approval again or count as a new automatic round.
 - Use gptworkbot-state-v2 only; retain old storage inactive. Rebind and connect the new protocol when upgrading from v1; updates from 0.2.x / 1.0.0 to 1.1.0 retain the v2 team and queue. Do not implement arbitrary predicates, artifact-field extraction or external file transfer.
 
-### FR-15: Public website language selection
+### FR-15: Optional website language selection (currently unpublished)
 
-The GitHub Pages product website runs independently of the extension. Choose an explicit URL language first, a saved manual choice second and the primary browser language last. Chinese tags use Simplified Chinese; other tags use English. Support manual switching, an Auto reset, restricted storage and a no-JavaScript fallback. Localize content, images, alt text and documentation links together. Generate download versions from package.json. Publish only page files and allowlisted display assets, excluding task state, native chats and extension background code. The repository README retains same-page bilingual navigation and links to the website.
+The optional product website source runs independently of the extension and is currently unpublished. Choose an explicit URL language first, a saved manual choice second and the primary browser language last. Chinese tags use Simplified Chinese; other tags use English. Support manual switching, an Auto reset, restricted storage and a no-JavaScript fallback. Localize content, images, alt text and documentation links together. Generate download versions from package.json. Build only page files and allowlisted display assets, excluding task state, native chats and extension background code. Current public promotion uses the repository README, with language-specific banners in its Chinese and English sections.
 
 ## 5. States and information structure
 
