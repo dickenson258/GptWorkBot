@@ -8,7 +8,14 @@ A Chrome side-panel extension for individual developers. Give the supervisor cha
 
 **1.0.0 · Chrome 120+ · Chinese / English · Existing ChatGPT login · Testing release**
 
-[简体中文](README.md) · [Download](https://github.com/dickenson258/GptWorkBot/releases/tag/v1.0.0) · [Getting started](#getting-started) · [Documentation](docs/README.en.md)
+[简体中文](https://github.com/dickenson258/GptWorkBot#readme) · [Download](https://github.com/dickenson258/GptWorkBot/releases/tag/v1.0.0) · [Getting started](#getting-started) · [Documentation](docs/README.en.md)
+
+<details>
+<summary>Page failed to load?</summary>
+
+If GitHub's file preview shows “Error loading page”, read the [English section on the repository homepage](https://github.com/dickenson258/GptWorkBot#english) or download the [offline bilingual homepage archive](https://github.com/dickenson258/GptWorkBot/releases/download/v1.0.0/gptworkbot-homepage-v1.0.0-2026-10-11.zip).
+
+</details>
 
 ## Make collaboration easier to follow
 

@@ -14,6 +14,8 @@
 - [插件需求文档](requirements.md)：需求编号、流程、异常处理与验收标准。
 - [文档导航与版本归档](README.md)：技术资料、验证记录和固定版本副本。
 
+GitHub 主首页的 English 入口使用同页锚点，避免依赖单独的文件预览请求。英文正文源文件为根目录 `README.en.md`；修改后运行 `npm run docs:sync-homepage`，以 `npm run docs:check-homepage` 检查主首页的英文区段是否同步。固定版本归档保留原样。
+
 ## 安装
 
 1. 在 Chrome 打开 `chrome://extensions`，开启“开发者模式”。

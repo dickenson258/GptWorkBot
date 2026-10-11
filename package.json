@@ -5,6 +5,8 @@
   "type": "module",
   "description": "Local-first coordination for independent ChatGPT Work conversations in one project.",
   "scripts": {
+    "docs:sync-homepage": "node scripts/sync-homepage.mjs",
+    "docs:check-homepage": "node scripts/sync-homepage.mjs --check",
     "dev": "vite --host 127.0.0.1",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

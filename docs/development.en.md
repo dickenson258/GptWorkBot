@@ -14,6 +14,8 @@ A Chrome Manifest V3 extension for individual developers. Coordinate independent
 - [Extension requirements](requirements.en.md): requirement IDs, exception handling, and acceptance criteria.
 - [Documentation and archives](README.en.md): technical records and fixed bilingual snapshots.
 
+The main GitHub homepage switches to English through a same-page anchor, avoiding a separate file-preview request. The root `README.en.md` is the English source. After editing it, run `npm run docs:sync-homepage` and verify synchronization with `npm run docs:check-homepage`. Historical snapshots stay unchanged.
+
 ## Installation
 
 1. Open `chrome://extensions` in Chrome and enable Developer mode.
