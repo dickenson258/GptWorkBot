@@ -1,0 +1,8 @@
+{
+  "extensionDescription": {
+    "message": "在同一 ChatGPT 项目内协调独立 Work 会话，查看组织架构、审核派发与回收结果。"
+  },
+  "actionTitle": {
+    "message": "打开 GptWorkBot"
+  }
+}

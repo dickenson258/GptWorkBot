@@ -1,0 +1,8 @@
+{
+  "extensionDescription": {
+    "message": "Coordinate Work conversations in one ChatGPT project with team status, reviewed dispatch, and result collection."
+  },
+  "actionTitle": {
+    "message": "Open GptWorkBot"
+  }
+}

@@ -1,0 +1,11 @@
+import { mkdir, readFile, readdir, rename } from 'node:fs/promises';
+import { execFileSync } from 'node:child_process';
+import { resolve } from 'node:path';
+await mkdir('release', { recursive: true });
+const files = await readdir('dist');
+const temporary = resolve(`release/.gptworkbot-${Date.now()}.zip`);
+execFileSync('/usr/bin/zip', ['-qr', temporary, ...files], { cwd: 'dist' });
+const { version } = JSON.parse(await readFile('dist/manifest.json', 'utf8'));
+const output = `release/gptworkbot-${version}.zip`;
+await rename(temporary, resolve(output));
+console.log(`Packaged: ${output}`);

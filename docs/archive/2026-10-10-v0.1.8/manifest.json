@@ -1,0 +1,70 @@
+{
+  "product": "GptWorkBot",
+  "productVersion": "0.1.8",
+  "documentVersion": "1.0",
+  "recordedDate": "2026-10-10",
+  "timezone": "Asia/Shanghai",
+  "languages": [
+    "zh-CN",
+    "en"
+  ],
+  "scope": "Product introductions, requirements, standalone navigation, and local demonstration screenshots",
+  "containsRealUserConversations": false,
+  "verification": {
+    "automatedTestFiles": 10,
+    "automatedTestsPassed": 164,
+    "realInstalledMultiAgentEndToEnd": "pending"
+  },
+  "files": [
+    {
+      "path": "README.en.md",
+      "bytes": 984,
+      "sha256": "e95d9be0d6f015f71214ac74845a88e94e637199fe5252ec2b92891d3c55c4c9"
+    },
+    {
+      "path": "README.md",
+      "bytes": 869,
+      "sha256": "40a7ff78643b0e46ad7d5dcad76c916c28d5b7ca480ad69be18f4dd5ba1e1312"
+    },
+    {
+      "path": "evidence/gptworkbot-create-role-en-400.png",
+      "bytes": 38091,
+      "sha256": "3d5dda865430be00a240a7b6c0dd7b7f02e246991d575184297925b046df7520"
+    },
+    {
+      "path": "evidence/gptworkbot-create-role-zh-400.png",
+      "bytes": 35218,
+      "sha256": "0cf32acecb270b5ef7602198dad93beef8c04e67bb711e9bb203861505cef2f2"
+    },
+    {
+      "path": "evidence/gptworkbot-sidepanel-en-400.png",
+      "bytes": 50426,
+      "sha256": "4221d6aac8d281829472b70458ff07b53253a0b22d1a3331a4634f7692fe654b"
+    },
+    {
+      "path": "evidence/gptworkbot-sidepanel-zh-400.png",
+      "bytes": 43926,
+      "sha256": "57c34345d3ec4fb71deb75e9cc4ebc7b29064dfc60f065cbbc0f4317780d1cde"
+    },
+    {
+      "path": "product-introduction.en.md",
+      "bytes": 10668,
+      "sha256": "bca971326722cfdc3fcded47405ca3636e64107fdbbad965588a19dcbec1d660"
+    },
+    {
+      "path": "product-introduction.md",
+      "bytes": 9051,
+      "sha256": "08c65f2a29ee8dd59a3f0290440cee3a02d808ec292da21ddb0a280ad821bea4"
+    },
+    {
+      "path": "requirements.en.md",
+      "bytes": 26477,
+      "sha256": "38dd09b22601b3db6027c6f047d2d9e13f997df6ee20146f966cd6f61a079506"
+    },
+    {
+      "path": "requirements.md",
+      "bytes": 23039,
+      "sha256": "d4e44ad6b9561bc7d5754df7e387d9b6ccf3aa18fc460fe5912cb2bffe07721d"
+    }
+  ]
+}

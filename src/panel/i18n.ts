@@ -1,0 +1,354 @@
+export type Locale = 'zh-CN' | 'en';
+export const languageStorageKey = 'gptworkbot-ui-language';
+export function normalizeLocale(value: unknown): Locale | undefined {
+  return value === 'zh-CN' || value === 'en' ? value : undefined;
+}
+export function browserLocale(language = navigator.language): Locale {
+  return /^zh(?:-|$)/i.test(language) ? 'zh-CN' : 'en';
+}
+export function initialLocale(): Locale {
+  try { return normalizeLocale(localStorage.getItem(languageStorageKey)) || browserLocale(); }
+  catch { return browserLocale(); }
+}
+export async function readLocale(): Promise<Locale> {
+  if (typeof chrome === 'undefined' || !chrome.runtime?.id) return initialLocale();
+  const saved = await chrome.storage.local.get(languageStorageKey);
+  return normalizeLocale(saved[languageStorageKey]) || browserLocale();
+}
+export async function saveLocale(locale: Locale): Promise<void> {
+  if (typeof chrome !== 'undefined' && chrome.runtime?.id) await chrome.storage.local.set({ [languageStorageKey]: locale });
+  else localStorage.setItem(languageStorageKey, locale);
+}
+
+// Only extension-owned labels and messages are translated. Names, instructions,
+// results and native page text remain user content, even when they match a label.
+const english: Record<string, string> = {
+  '输入快照缺失或不完整，请核对任务成果': 'Input snapshot is missing or incomplete. Check the task results.',
+  '会话地址无效，请重新绑定当前项目角色': 'Invalid conversation URL. Rebind the role in this project.',
+  '界面语言': 'Interface language',
+  '语言设置保存失败，请重试': 'Could not save the language preference. Please try again.',
+  '连接{name}': 'Connect {name}', '初始化{name}': 'Initialize {name}',
+  '新增 Work 角色': 'Add Work role',
+  '关闭新增角色': 'Close role form',
+  '加入当前项目': 'Join current project',
+  'Work 主管 · 负责派发与汇总': 'Work supervisor · dispatch and summarize',
+  'Work 成员 · 向{name}回报': 'Work member · report to {name}',
+  '主管': 'Supervisor', '成员': 'Member',
+  '当前项目尚未绑定主管，本次将创建主管角色。创建完成后可继续新增成员。': 'This project has no supervisor yet. Create the supervisor first, then add members.',
+  '角色名称': 'Role name', '例如：项目主管': 'e.g. Project manager', '例如：质量检查': 'e.g. Quality reviewer',
+  '角色职责': 'Responsibilities',
+  '说明负责的工作和约束，沿用当前项目背景': 'Describe the work and constraints using this project’s existing context',
+  '首个任务（可选）': 'First task (optional)',
+  '留空时只初始化角色，等待主管派发': 'Leave empty to initialize the role and wait for the supervisor',
+  '验收条件（可选）': 'Acceptance criteria (optional)',
+  '例如：列出问题位置与修复建议': 'e.g. List issue locations and suggested fixes',
+  '创建后会在此项目中打开 Work 主管会话，并初始化协作方式。就绪后在主管会话下达目标。': 'A Work supervisor conversation will open in this project and initialize collaboration. Give it a goal when ready.',
+  '创建后会在此项目中打开 Work 会话。填写首个任务后会开始执行；留空则只确认职责与协作方式。': 'A Work conversation will open in this project. It will run the first task if provided, or just confirm its responsibilities and collaboration protocol.',
+  '协作已暂停，创建任务会排队，恢复后开始。': 'Collaboration is paused. Creation will stay queued until you resume.',
+  '取消': 'Cancel', '正在提交…': 'Submitting…', '加入创建队列': 'Queue creation', '创建 Work 角色': 'Create Work role',
+  '已提交创建“{name}”，将加入项目“{project}”。': 'Creation submitted for “{name}” in “{project}”. ',
+  '恢复协作后开始创建。': 'Creation will start when you resume.',
+  '会话准备完成后显示在组织图中。': 'The role will appear in the chart when its conversation is ready.',
+  '已解绑{name}。原会话和任务历史保留，已启动的 Work 任务请在 ChatGPT 内处理。': 'Unbound {name}. The conversation and task history are preserved. Handle any started Work tasks in ChatGPT. ',
+  '后续协作已暂停。': 'Future collaboration is paused.',
+  '请先在浏览器打开要协作的 ChatGPT 项目': 'Open the ChatGPT project you want to coordinate in your browser first.',
+  '请刷新 ChatGPT 页面，让插件连接后再读取': 'Refresh ChatGPT, then read the project after the extension connects.',
+  '读取中…': 'Reading…',
+  '未找到当前会话所属项目，请打开项目首页后重新读取': 'Could not identify this conversation’s project. Open the project home page and read it again.',
+  '未读取到项目名称，请填写或打开项目首页后重新读取': 'Could not read the project name. Enter it or open the project home page and read it again.',
+  '请填写项目名称和项目首页地址': 'Enter the project name and its home URL.',
+  '请先连接项目，并选择已有的 Work 会话': 'Connect a project and select an existing Work conversation first.',
+  '请连接此项目，选择主管，并确认所选会话使用 Work 模式': 'Connect this project, select a supervisor, and confirm the selected conversations use Work mode.',
+  '已加入 {count} 个会话，点击“连接协作”即可开始': 'Added {count} conversations. Click “Connect collaboration” to start.',
+  '初始化消息已送达，等待 Work 返回就绪确认': 'Initialization delivered; waiting for Work to confirm readiness.',
+  '请打开会话核对': 'Open the conversation to check',
+  '已送达，等待就绪回复': 'Delivered; waiting for readiness',
+  '等待连接协作协议': 'Waiting for protocol connection',
+  '沿用项目既有分工': 'Using existing project responsibilities',
+  '演示预览 · 不连接 ChatGPT': 'Demo preview · no ChatGPT connection',
+  '让项目成员一起工作': 'Bring your project team together',
+  '团队设置': 'Team settings', '重连插件': 'Reconnect extension', '关闭提示': 'Dismiss message',
+  '当前项目': 'Current project', '连接你的 Work 项目': 'Connect your Work project', '绑定会话': 'Bind conversations',
+  '项目与会话': 'Project and conversations', '读取当前项目': 'Read current project',
+  '选择同一项目已有的 Work 会话。成员职责继续沿用项目设置。': 'Select existing Work conversations from one project. Keep the project’s existing responsibilities.',
+  '项目名称': 'Project name', '你的项目': 'Your project', '项目首页地址': 'Project home URL', '连接项目': 'Connect project',
+  '批量加入已有团队': 'Import an existing team',
+  '先连接项目，再加入所选角色；当前选择会保留。': 'Connect the project before importing roles. Your selections will be kept.',
+  '发现 {count} 个会话，请选择本次参与协作的成员。': 'Found {count} conversations. Select the roles to include.',
+  '未命名会话': 'Untitled conversation', '选择主管': 'Select supervisor', '请选择主管会话': 'Choose a supervisor conversation',
+  '已确认所选会话均使用 Work 模式': 'I have confirmed all selected conversations use Work mode',
+  '加入 {count} 个会话': 'Add {count} conversations',
+  '选择已打开或项目中发现的会话': 'Select an open or discovered conversation',
+  '选择会话，也可在下方粘贴地址': 'Choose a conversation or paste its URL below',
+  '已打开会话': 'Open conversation', 'Work 会话地址': 'Work conversation URL', '显示名称': 'Display name',
+  '例如：前端开发': 'e.g. Frontend developer', '设为主管会话': 'Use as supervisor',
+  '已确认属于此项目，且使用 Work 模式': 'I have confirmed this belongs to the project and uses Work mode',
+  '加入团队': 'Join team', '运行设置': 'Run settings', '同时执行的成员数': 'Concurrent members',
+  '自动模式最多连续轮数': 'Maximum automatic rounds',
+  '每个会话一次处理一项任务。达到轮数上限后暂停，待你检查后继续。': 'Each conversation handles one task at a time. At the round limit, collaboration pauses for your review.',
+  '重新核对会话': 'Recheck conversations', '派发模式': 'Dispatch mode', '每轮确认': 'Review each round',
+  '自动协作': 'Automatic', '继续': 'Resume', '暂停': 'Pause',
+  '后续消息已暂停。原生 Work 任务按当前状态运行。': 'Future messages are paused. Native Work tasks continue in their current state.',
+  '团队组织': 'Team structure', '{count} 个会话': '{count} conversations',
+  '请先连接项目': 'Connect a project first.',
+  '在当前项目创建 Work 成员': 'Create a Work member in the current project',
+  '在当前项目创建 Work 主管': 'Create a Work supervisor in the current project',
+  '新增角色': 'Add role', '空闲': 'Idle', '执行中': 'Running', '需要交互': 'Needs input', '状态未知': 'Unknown',
+  '从主管会话开始': 'Start with a supervisor',
+  '绑定主管与成员，再连接协作。': 'Bind a supervisor and members, then connect collaboration.',
+  '之后在原 ChatGPT 会话向主管下达命令。': 'Then give the supervisor a goal in its ChatGPT conversation.',
+  '连接协作 · 同步消息路由': 'Connect collaboration · sync routes',
+  '正在逐个连接 · 可重新核对会话': 'Connecting in order · recheck available',
+  '关闭成员详情': 'Close member details', '打开会话': 'Open conversation', '打开项目核对': 'Open project to check',
+  '请求停止': 'Request stop', '解绑': 'Unbind', '最近核对 {time}': 'Last checked {time}',
+  '会话未连接，可重新核对或直接解绑': 'Conversation disconnected. Recheck or unbind directly.',
+  '解绑会停止此角色的后续消息，保留原 ChatGPT 会话及任务历史。': 'Unbinding stops future messages for this role and preserves the ChatGPT conversation and task history.',
+  '角色职责：': 'Responsibilities: ', 'Work 会话名称已与角色名称同步': 'Work conversation title matches the role name.',
+  '任务完成后同步 Work 会话名称': 'Sync the Work conversation title after the task finishes.',
+  '同步会话名称': 'Sync title', '协作任务': 'Collaboration tasks', '{count} 项处理中': '{count} active',
+  '待确认第 {round} 轮 · {count} 项任务': 'Review round {round} · {count} tasks', '确认本轮': 'Approve round',
+  '在主管会话下达目标后，任务会出现在这里。': 'Tasks will appear here after you give the supervisor a goal.',
+  '新建 · {name}': 'Create · {name}', ' · 收取回报': ' · collect report', '任务内容': 'Task details',
+  '新成员职责：': 'New member responsibilities: ', '上下文：': 'Context: ', '完成条件：': 'Acceptance: ', '成员成果：': 'Member result: ',
+  '编辑': 'Edit', '确认': 'Approve', '继续核对': 'Request progress', '重试发送': 'Retry send',
+  '核对发送回执': 'Check receipt', '用户验收': 'Accept result', '打开新会话': 'Open new conversation',
+  '复制后可在目标会话手动发送；同一标识不要重复执行': 'Copy to send manually in the target conversation. Do not repeat the same delivery token.',
+  '已复制任务，发送前请核对目标会话与现有回执': 'Task copied. Check the target conversation and existing receipts before sending.',
+  '复制失败，请展开任务内容后复制': 'Copy failed. Expand the task details and copy manually.',
+  '复制': 'Copy', '协作动态': 'Activity', '刷新状态': 'Refresh status',
+  '会话与记录保存在本机 · 使用现有 ChatGPT 账号': 'Local records · your existing ChatGPT account',
+  '核对任务': 'Review task', '关闭编辑': 'Close editor', '标题': 'Title', '新成员职责': 'New member responsibilities',
+  '具体任务': 'Instructions', '上下文': 'Context', '完成条件': 'Acceptance criteria', '保存，保持待确认': 'Save for review',
+  '创建请求无效，请重新打开新增角色窗口': 'Invalid creation request. Reopen the role form.',
+  '请填写角色名称': 'Enter a role name.', '角色名称最多 100 个字符': 'Role names can contain at most 100 characters.',
+  '请填写角色职责': 'Enter the role’s responsibilities.', '角色职责最多 20000 个字符': 'Responsibilities can contain at most 20,000 characters.',
+  '首个任务最多 40000 个字符': 'The first task can contain at most 40,000 characters.',
+  '验收条件最多 4000 个字符': 'Acceptance criteria can contain at most 4,000 characters.',
+  '角色名称已存在，请使用不同的名称': 'That role name already exists. Choose a different name.',
+  '已有同名角色正在创建，请先查看协作任务': 'A role with that name is already being created. Check the task queue.',
+  '请选择 1 位主管及需要加入的成员': 'Select exactly one supervisor and the members to add.',
+  '请填写 ChatGPT 项目首页地址': 'Enter the ChatGPT project home URL.',
+  '请先处理当前项目任务，再切换项目': 'Resolve the current project’s tasks before switching projects.',
+  '请确认会话属于当前项目并已选择 Work 模式': 'Confirm the conversation belongs to this project and uses Work mode.',
+  '成员名称重复，请使用不同的显示名称': 'Duplicate member name. Choose a different display name.',
+  '当前项目的主管正在创建，请等待创建完成': 'The project supervisor is being created. Wait for it to finish.',
+  '存在未结束任务，暂时不能更换主管': 'Finish outstanding tasks before changing the supervisor.',
+  '原任务已解绑，停止后续指导消息': 'The original task was unbound. Further guidance is stopped.',
+  '请先连接当前 ChatGPT 项目': 'Connect the current ChatGPT project first.',
+  '当前项目已切换，请重新打开新增角色窗口': 'The current project changed. Reopen the role form.',
+  '此创建请求已提交，请关闭窗口并查看协作任务': 'This creation request was already submitted. Close the form and check the tasks.',
+  '当前项目已有主管或主管正在创建，请新增成员角色': 'This project already has a supervisor or one is being created. Add a member instead.',
+  '主管创建时只初始化职责，创建完成后请在主管会话下达目标': 'Supervisor creation only initializes responsibilities. Give it a goal after creation.',
+  '请先创建或绑定当前项目的主管会话': 'Create or bind the project supervisor first.',
+  '请先绑定主管会话': 'Bind a supervisor first.',
+  '已排队发送消息路由说明，项目分工保持原样': 'Routing setup queued. Existing project responsibilities are preserved.',
+  '本轮任务已确认': 'This round was approved.', '只可编辑尚未确认的任务': 'Only unapproved tasks can be edited.',
+  '标题和任务内容不能为空': 'Title and instructions are required.', '新成员职责不能为空': 'New member responsibilities are required.',
+  '已启动的任务请打开会话或使用停止按钮处理': 'For a started task, open its conversation or use the stop button.',
+  '此任务尚未提交结果': 'This task has no submitted result.', '请使用有效的模式、并发数和自动轮数': 'Use a valid mode, concurrency and round limit.',
+  '已开启自动模式；已有待确认任务仍需确认': 'Automatic mode enabled. Existing draft tasks still require approval.',
+  '已切换为每轮确认': 'Switched to review each round.',
+  '已暂停后续派发与回传；Work 中的任务继续按原生状态运行': 'Future dispatch and reports paused. Native Work tasks continue in their current state.',
+  '已恢复协作': 'Collaboration resumed.', '该任务无需恢复': 'This task does not need recovery.',
+  '发送状态不确定，请先重新核对页面；不会自动重发': 'Delivery is uncertain. Recheck the page first; the message will not be resent automatically.',
+  '已请求成员核对进展并补充回报': 'Requested a progress check and additional report from the member.',
+  '验收目标尚未提交结果': 'The acceptance target has not submitted a result.',
+  '只能指导已有成员暂停等待处理的任务': 'Guidance requires an existing member task waiting for input.',
+  '该任务已有继续处理的消息，请等待成员回报': 'Guidance is already pending for this task. Wait for the member’s report.',
+  '自动轮数已达上限，请检查后恢复协作': 'The automatic round limit was reached. Review before resuming.',
+  '回报未对应此成员已收到的任务': 'This report does not match a task delivered to this member.',
+  '主管会话未绑定': 'The supervisor is not bound.', '本轮成员回报': 'Member reports for this round',
+  '本次回复已结束，但未包含对应任务回报，请核对进展或请求补充回报': 'The reply finished without a matching task report. Check progress or request an additional report.',
+  '会话所属项目与团队不符，请核对': 'The conversation’s project does not match the team. Please check.',
+  '协作指令的项目标识不匹配': 'The collaboration instruction has a mismatched project ID.',
+  '一条回复只能有一个协作指令块，请主管整理后重发': 'A reply can contain only one collaboration block. Ask the supervisor to revise it.',
+  '协作指令过长，请拆成多轮': 'The collaboration instruction is too long. Split it into rounds.',
+  '协作指令格式不完整，请整理 JSON 后重发': 'Invalid collaboration format. Revise the JSON.',
+  '协作指令缺少必需信息或包含不支持的操作': 'The collaboration instruction is missing required fields or uses unsupported operations.',
+  '成员名称重复，请使用会话标识派发': 'Duplicate member names. Dispatch using the conversation ID.',
+  '目标成员未绑定，请先加入团队': 'The target member is not bound. Add it to the team first.',
+  '旧版临时地址导致路由失效；原记录保留，恢复正式地址后请重新连接协作': 'A legacy temporary URL invalidated routing. Records are preserved. Recover the permanent URL, then reconnect collaboration.',
+  '旧版临时地址导致路由失效，请核对原会话的消息回执': 'A legacy temporary URL invalidated routing. Check the original conversation’s receipt.',
+  '已暂停旧版临时地址的自动派发；打开原项目会话并重新核对，可按创建回执恢复角色，不重建或重发': 'Dispatch to legacy temporary URLs is paused. Open the original project conversation and recheck to recover the role from its creation receipt.',
+  '旧版临时地址待恢复，请打开原项目会话并重新核对': 'A legacy temporary URL needs recovery. Open the original project conversation and recheck.',
+  '会话页面已关闭，请打开原会话或点击任务的重试发送': 'The conversation page was closed. Open it or retry the task’s send.',
+  '等待会话连接或重新核对状态': 'Waiting for connection or a status recheck.',
+  '需要继续处理': 'Further input is required.', '有一轮任务等待用户确认': 'A task round awaits your approval.',
+  '正在处理当前任务': 'Processing the current task.', '会话名称待同步': 'Conversation title needs synchronization.',
+  '未找到可用输入区': 'No usable composer found.', '输入框存在草稿，队列等待发送': 'A draft exists in the composer. Dispatch is waiting.',
+  '当前可以接收任务': 'Ready to receive a task.', '待确认': 'Awaiting approval', '排队中': 'Queued', '正在发送': 'Sending',
+  '待主管验收': 'Awaiting acceptance', '已验收': 'Accepted', '已取消': 'Cancelled', '需要核对': 'Needs recheck',
+  '请先登录 ChatGPT': 'Sign in to ChatGPT first.', '当前页面不是目标会话': 'This page is not the target conversation.',
+  '请先切换到 Work 模式': 'Switch to Work mode first.', '会话仍在执行，等待完成': 'The conversation is still running. Waiting for completion.',
+  '未找到可用输入区，请打开会话核对': 'No usable composer found. Open the conversation to check.',
+  '输入区暂不可编辑，请在会话内处理后重试发送': 'The composer cannot be edited. Resolve this in the conversation, then retry sending.',
+  '输入框存在用户草稿或任务已被修改，请在会话内核对；不会覆盖内容': 'A user draft exists or the task was modified. Check the conversation; its content will not be overwritten.',
+  '此版本输入区不支持安全填入，请使用复制任务后手动发送': 'This composer cannot be filled safely. Copy the task and send it manually.',
+  '页面或输入区发生变化，请核对后重试发送': 'The page or composer changed. Check before retrying.',
+  '会话模式已变化，请切换到 Work 后重试发送': 'The conversation mode changed. Switch to Work before retrying.',
+  '会话已开始执行，保留草稿等待核对': 'The conversation started running. The draft is preserved for checking.',
+  '输入区暂不可编辑，已保留草稿': 'The composer cannot be edited. The draft is preserved.',
+  '输入内容发生变化，已保留草稿，请核对': 'The input changed. The draft is preserved; please check.',
+  '发送按钮仍被禁用；任务草稿已保留，处理页面提示后点击“重试发送”': 'Send is still disabled. The task draft is preserved. Resolve the page prompt, then click “Retry send”.',
+  '未找到唯一的发送按钮；任务草稿已保留，可打开会话核对后“重试发送”或手动发送': 'No unique send button found. The draft is preserved. Check the conversation, then retry or send manually.',
+  '已点击发送，但尚未确认消息出现；将核对页面，不自动重发': 'Send was clicked, but the message is not confirmed. The page will be checked without automatic resending.',
+  '正在打开项目新会话，请稍后继续核对': 'Opening a new project conversation. Recheck shortly.',
+  '已请求选择 Work，请核对后继续': 'Work selection requested. Check before continuing.',
+  '请在新会话选择 Work 模式，然后点击“重试发送”': 'Select Work mode in the new conversation, then click “Retry send”.',
+  '等待新会话输入区就绪': 'Waiting for the new conversation’s composer.',
+  '后台已恢复，请核对发送回执': 'The background service recovered. Check delivery receipts.',
+  '已确认职责／初始化消息送达，等待 Work 正式会话地址；不会另开页面或重发': 'Responsibilities and initialization were delivered. Waiting for a permanent Work URL without opening another page or resending.',
+  '当前项目已绑定另一位主管，请先核对主管会话': 'Another supervisor is bound to this project. Check the supervisor conversation.',
+  '此会话或角色名称已绑定，请核对原创建回执': 'This conversation or role name is already bound. Check the original creation receipt.',
+  '同步新成员路由': 'Sync new member routes',
+  '角色尚无正式会话地址，请打开原项目会话并重新核对；不会打开临时地址': 'This role has no permanent URL. Open the original project conversation and recheck. Temporary URLs will not be opened.',
+  '原会话页面已跳转，请手动打开正确会话并重新核对；不会另开重复页面': 'The original page navigated away. Open the correct conversation and recheck. No duplicate page will be opened.',
+  '会话页面已关闭或打开结果待核对；请打开原会话或点击任务的重试发送': 'The page was closed or opening is unconfirmed. Open the original conversation or retry sending.',
+  '页面打开已中止，请重新核对': 'Opening the page was interrupted. Please recheck.', '无法打开目标会话': 'Could not open the target conversation.',
+  '页面已切换，请打开原会话核对后同步名称': 'The page changed. Open the original conversation and check before syncing its title.',
+  '原生会话名称尚未确认，请打开会话核对后重试同步名称': 'The native title is unconfirmed. Open the conversation, check it, and retry title synchronization.',
+  '新成员标签页已关闭或地址已变化，请打开原会话核对；不会另建重复会话': 'The new member tab closed or its URL changed. Check the original conversation; no duplicate will be created.',
+  '无法打开项目新会话': 'Could not open a new project conversation.',
+  '创建页面已关闭，请打开原项目会话核对；不会另建重复会话': 'The creation page closed. Check the original project conversation; no duplicate will be created.',
+  '等待会话加载完成与输入区就绪': 'Waiting for the conversation to load and its composer to be ready.',
+  '新会话尚未就绪，请打开标签页选择 Work 后重试发送': 'The new conversation is not ready. Open its tab, select Work, then retry sending.',
+  '等待新会话地址与发送回执': 'Waiting for the conversation URL and delivery receipt.',
+  '目标页面已切换，请重新核对会话': 'The target page changed. Recheck the conversation.',
+  '原任务已不再等待处理，取消过期的继续消息': 'The original task no longer awaits input. Stale guidance was cancelled.',
+  '前一角色': 'the previous role', '无效操作': 'Invalid operation.',
+  '已重新核对打开的会话；未确认的发送不会重发': 'Open conversations rechecked. Unconfirmed sends will not be repeated.',
+  '请先打开原项目会话并恢复正式地址': 'Open the original project conversation and recover its permanent URL first.',
+  '此成员已解绑': 'This member was unbound.', '请先打开成员会话': 'Open the member conversation first.',
+  '原生生成已停止，请检查任务成果后继续处理': 'Native generation stopped. Check the task result before continuing.',
+  '等待原生停止确认': 'Waiting for native stop confirmation.',
+  '发送期间页面关闭，请核对原会话回执，不会重发': 'The page closed during sending. Check the original receipt; the message will not be resent.',
+  '会话页面已关闭，自动派发已停止；请打开原会话或重试发送': 'The conversation page closed and automatic dispatch stopped. Open it or retry sending.',
+  '插件后台暂未连接，请关闭侧栏后重新打开；若仍未恢复，请在扩展管理页重新加载 GptWorkBot。团队记录会保留。': 'The background service is disconnected. Close and reopen the sidebar; if needed, reload GptWorkBot in extension management. Team records are preserved.',
+  '目标会话的连接已中断，请重新核对会话或打开原页面后刷新；角色仍可直接解绑。': 'The target conversation connection was lost. Recheck, or open and refresh its page. You can still unbind the role directly.',
+  '目标 ChatGPT 标签页已关闭或已切换，请打开原会话后重新核对': 'The target ChatGPT tab closed or changed. Open the original conversation and recheck.',
+  '等待会话加载完成与输入区就绪；页面准备好后会继续派发': 'Waiting for the page and composer. Dispatch will continue when ready.',
+  '本次派发已暂停或取消': 'This dispatch was paused or cancelled.',
+  '目标标签页已关闭或地址已变化，请重新核对会话': 'The target tab closed or its URL changed. Recheck the conversation.',
+  '另一条消息正在发送': 'Another message is being sent.', '页面操作尚未完成': 'A page operation is still pending.',
+  '另一条页面操作正在执行，请稍后重试同步名称': 'Another page operation is running. Retry title synchronization later.',
+  '请等待 Work 任务完成并处理草稿或页面提示后，再同步名称': 'Wait for Work to finish and resolve drafts or page prompts before syncing the title.',
+  '当前页面不是目标会话，请重新核对': 'This is not the target conversation. Please recheck.',
+  '未找到原生停止按钮，请在会话里处理': 'No native stop button found. Handle this in the conversation.',
+  '已请求停止，等待原生任务确认': 'Stop requested. Waiting for native confirmation.',
+  '会话地址或角色名称不匹配，请重新核对': 'The conversation URL or role name does not match. Please recheck.',
+  '未找到唯一的原生标题入口，或标题正在编辑；请打开会话核对后重试同步名称': 'No unique native title control found, or the title is being edited. Check the conversation before retrying.',
+  '原生标题正在编辑，请先在会话中保存或取消，再重试同步名称': 'The native title is being edited. Save or cancel it in the conversation before retrying title sync.',
+  '未找到唯一且可用的原生标题入口，请打开会话核对后重试同步名称': 'No unique usable native title control was found. Check the conversation before retrying title sync.',
+  '原生标题编辑框未获得焦点或已被修改，请打开会话核对后重试同步名称': 'The native title editor could not receive focus or was changed. Check the conversation before retrying title sync.',
+  '页面已有打开的菜单或对话框，请关闭后重试同步名称': 'A menu or dialog is already open. Close it before retrying title sync.',
+  '原生重命名入口暂不可用，请稍后重试同步名称': 'Native rename is temporarily unavailable. Retry title sync later.',
+  '未找到唯一的原生重命名操作，请打开会话核对后重试同步名称': 'No unique native rename action was found. Check the conversation before retrying title sync.',
+  '原生重命名表单未就绪，请打开会话核对后重试同步名称': 'The native rename form is not ready. Check the conversation before retrying title sync.',
+  '原生重命名表单已变化或不可提交，请核对后重试同步名称': 'The native rename form changed or cannot be submitted. Check it before retrying title sync.',
+  '页面已切换，停止同步会话名称': 'The page changed. Title synchronization stopped.',
+  '原生标题编辑框未就绪，请打开会话核对后重试同步名称': 'The native title editor is not ready. Check the conversation before retrying.',
+  '标题编辑状态发生变化，请核对会话名称': 'The title editor changed. Check the conversation title.',
+  '页面已切换，请核对会话名称是否保存': 'The page changed. Check whether the title was saved.',
+  '尚未确认原生会话名称保存；请打开会话核对后重试同步名称，不会重新创建或发送任务': 'The native title save is unconfirmed. Check and retry synchronization; the role and task will not be recreated or resent.',
+  "等待前置任务": "Waiting for prerequisites",
+  "前置任务与输入": "Prerequisites and inputs",
+  "前置任务": "Prerequisites",
+  "任务不存在": "Task not found",
+  "已传入成果：": "Input result: ",
+  "历史成果": "Result history",
+  "选择后自动映射完整成果；前置任务回传并验收后才启动。": "Full results are mapped automatically. Start after prerequisite delivery and acceptance.",
+  "任务依赖重复或超过上限": "Task dependencies are duplicated or exceed the limit.",
+  "输入名称重复或超过上限": "Input names are duplicated or exceed the limit.",
+  "前置任务不存在或不是成员业务任务，请主管重新整理": "A prerequisite is missing or is not a member task. Ask the supervisor to revise the plan.",
+  "任务不能依赖自身，请主管重新整理": "A task cannot depend on itself. Ask the supervisor to revise the plan.",
+  "任务依赖不能跨项目": "Dependencies cannot cross projects.",
+  "每个前置任务必须声明必需成果输入": "Every prerequisite needs a required result input.",
+  "输入必须引用已声明的前置任务完整成果": "Inputs must reference full results from declared prerequisites.",
+  "任务依赖存在循环，请主管重新整理": "The dependencies contain a cycle. Ask the supervisor to revise the plan.",
+  "任务键重复或与已有任务标识冲突，请主管重新整理": "Task keys are duplicated or conflict with task IDs. Ask the supervisor to revise the plan.",
+  "前置任务尚未完成回传与验收，不能发送或复制后续任务": "Prerequisite delivery and acceptance are pending. Downstream tasks cannot be sent or copied.",
+  "只有成员业务任务可设置依赖": "Only member tasks can have dependencies.",
+  "任务轮次已变化，请重新核对当前成果": "The task attempt changed. Recheck the current result.",
+  "同一批指令不能重复验收或修订同一个任务": "A batch cannot accept or revise the same task twice.",
+  "成果尚未确认回传主管，请先核对回执": "Result delivery to the supervisor is unconfirmed. Recheck the receipt.",
+  "只能指导已有成员已提交或等待处理的任务": "Only submitted or waiting member tasks can be revised.",
+  "等待主管指导送达并提交新版成果": "Waiting for revision guidance delivery and a new result.",
+  "当前任务尚未开始执行": "The task has not started.",
+  "当前修订轮次尚未确认送达": "Delivery of this revision attempt is unconfirmed.",
+  "请使用 version 2 协作协议，并提供任务轮次及完整依赖输入": "Use protocol version 2 with task attempts and complete dependency inputs.",
+};
+
+const systemTemplates: Record<string, string> = {
+  '等待前置任务完成：{title}': 'Waiting for prerequisite completion: {title}',
+  '等待主管验收前置成果：{title}': 'Waiting for prerequisite acceptance: {title}',
+  '等待前置成果回传主管：{title}': 'Waiting for result delivery to the supervisor: {title}',
+  '前置任务已取消：{title}': 'Prerequisite cancelled: {title}',
+  '前置任务需要处理：{title}': 'Prerequisite needs input: {title}',
+  '前置任务缺少成果：{title}': 'Prerequisite result missing: {title}',
+  '已安排修订：{title}，第 {attempt} 轮': 'Revision planned: {title}, attempt {attempt}',
+  '忽略旧轮次成果：{title}': 'Ignored an outdated result: {title}',
+  '执行轮次：{attempt}': 'Attempt: {attempt}',
+  '已连接项目：{name}': 'Project connected: {name}',
+  '已绑定主管：{name}': 'Supervisor bound: {name}', '已绑定成员：{name}': 'Member bound: {name}',
+  '{name}已解绑，插件停止跟踪及后续消息；已启动的原生任务请在 ChatGPT 会话内处理': '{name} unbound. Tracking and future messages stopped. Handle started native tasks in ChatGPT.',
+  '已解绑主管：{name}；原会话与任务历史保留，后续协作已暂停': 'Supervisor unbound: {name}. Conversation and task history preserved; collaboration paused.',
+  '已解绑成员：{name}；原会话与任务历史保留': 'Member unbound: {name}. Conversation and task history preserved.',
+  '已排队创建 Work 角色：{name}，加入项目 {project}；恢复协作后开始': 'Work role queued: {name} in {project}. Creation starts after resume.',
+  '已排队创建 Work 角色：{name}，加入项目 {project}': 'Work role queued: {name} in {project}.',
+  '继续处理：{title}': 'Check progress: {title}', '主管指导：{title}': 'Supervisor guidance: {title}',
+  '用户确认验收：{title}': 'Accepted by user: {title}', '主管已验收：{title}': 'Accepted by supervisor: {title}',
+  '主管提出 {count} 项任务，等待确认': 'Supervisor proposed {count} tasks; awaiting approval.',
+  '主管提出 {count} 项任务': 'Supervisor proposed {count} tasks.',
+  '{name}已提交成果': '{name} submitted a result.', '{name}需要进一步交互': '{name} needs further input.',
+  '{name}已连接协作协议': '{name} connected to the collaboration protocol.',
+  '{name}向主管提交了协作请求': '{name} submitted a collaboration request to the supervisor.',
+  '已按原创建回执恢复正式会话：{name}；请重新连接协作以同步路由': 'Permanent conversation recovered from the creation receipt: {name}. Reconnect collaboration to sync routes.',
+  '已在项目中创建主管：{name}': 'Supervisor created in project: {name}', '已在项目中创建成员：{name}': 'Member created in project: {name}',
+  '已同步 Work 会话名称：{name}': 'Work conversation title synchronized: {name}',
+  '已派发：{title}': 'Dispatched: {title}', '已请求停止：{name}': 'Stop requested: {name}',
+  '逐个连接：等待{name}完成就绪确认': 'Connecting in order: waiting for {name} to confirm readiness.',
+};
+function interpolate(template: string, values: Record<string, string | number>): string {
+  return template.replace(/\{(\w+)\}/g, (whole, key: string) => String(values[key] ?? whole));
+}
+export function translator(locale: Locale) {
+  return (message: string, values: Record<string, string | number> = {}) => {
+    let template = locale === 'en' ? english[message] || systemTemplates[message] || message : message;
+    if (locale === 'en' && values.count === 1) template = template.replace(/\btasks\b/g, 'task').replace(/\bconversations\b/g, 'conversation');
+    return interpolate(template, values);
+  };
+}
+const patterns = Object.entries(systemTemplates).map(([source, target]) => {
+  const keys: string[] = [];
+  const regex = source.split(/(\{\w+\})/).map(part => {
+    if (/^\{\w+\}$/.test(part)) { keys.push(part.slice(1, -1)); return '([\\s\\S]+?)'; }
+    return part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }).join('');
+  return { regex: new RegExp(`^${regex}$`), keys, target };
+});
+export function systemText(message: string | undefined, locale: Locale): string {
+  if (!message || locale === 'zh-CN') return message || '';
+  if (english[message]) return english[message];
+  // Old saved notices remain readable after a branding-only upgrade.
+  if (message.includes('重新加载 Work Team。')) return systemText(message.replace('重新加载 Work Team。', '重新加载 GptWorkBot。'), locale);
+  for (const {regex, keys, target} of patterns) {
+    const match = regex.exec(message);
+    if (match) return interpolate(target, Object.fromEntries(keys.map((key, index) => [key, match[index + 1]])));
+  }
+  for (const [prefix, translated] of [['需要核对：', 'Needs recheck: '], ['等待处理：', 'Waiting for input: ']]) {
+    if (message.startsWith(prefix)) return translated + systemText(message.slice(prefix.length), locale);
+  }
+  const suffix = '；请打开原会话核对，已有消息不会自动重发';
+  if (message.endsWith(suffix)) return message.slice(0, -suffix.length) + '; open the original conversation to check. Delivered messages will not be resent automatically.';
+  const separator = message.indexOf('：');
+  if (separator > 0) {
+    const detail = message.slice(separator + 1);
+    const localized = systemText(detail, locale);
+    if (localized !== detail) return message.slice(0, separator) + ': ' + localized;
+  }
+  try {
+    const issues: unknown = JSON.parse(message);
+    if (Array.isArray(issues) && issues.every(issue => issue && typeof issue.message === 'string')) return issues.map(issue => systemText(issue.message, locale)).join('\n');
+  } catch { /* Raw native messages are preserved as evidence. */ }
+  return message;
+}

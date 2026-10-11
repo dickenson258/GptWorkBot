@@ -1,0 +1,12 @@
+import { build } from 'esbuild';
+import { access, copyFile, mkdir, readFile } from 'node:fs/promises';
+await mkdir('dist', { recursive: true });
+await build({ entryPoints: ['src/extension/background.ts'], bundle: true, outfile: 'dist/background.js', format: 'esm', target: 'chrome116', sourcemap: false });
+await build({ entryPoints: ['src/extension/content.ts'], bundle: true, outfile: 'dist/content.js', format: 'iife', target: 'chrome116', sourcemap: false });
+await copyFile('manifest.json', 'dist/manifest.json');
+const manifest = JSON.parse(await readFile('dist/manifest.json', 'utf8'));
+const references = [...Object.values(manifest.icons), ...Object.values(manifest.action.default_icon), manifest.background.service_worker, manifest.side_panel.default_path, ...manifest.content_scripts.flatMap(s => s.js)];
+const html = await readFile(`dist/${manifest.side_panel.default_path}`, 'utf8');
+references.push(...[...html.matchAll(/(?:src|href)="(\.\/assets\/[^\"]+)"/g)].map(match => match[1]));
+await Promise.all(references.map(path => access(`dist/${path}`)));
+console.log('Extension ready: dist/');
