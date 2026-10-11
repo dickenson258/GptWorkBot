@@ -1,5 +1,21 @@
 # GptWorkBot 首页审核与发布记录
 
+## 1.1.0 发布 · 2026-10-11
+
+用户指定将版本更新为 **1.1.0** 并提交至公共 GitHub 仓库。当前 package、锁文件、manifest、下载入口及双语产品、需求、协议和开发文档同步到 1.1.0；文档基线为 2.2。协议 v2 与 `gptworkbot-state-v2` 保留，0.2.x／1.0.0 的 v2 团队与任务继续使用。
+
+本版加入完整 v2 `json` 代码块识别、主管计划漏登记诊断和显式恢复入口；JSON 主管派发与恢复计划均先进入待确认。依赖、暂停、项目归属、当前回复与重复登记校验继续执行。自动化检查及真实安装边界见 [验证记录](docs/verification.md)。
+
+1.1.0 首页固定快照为 `docs/archive/2026-10-11-homepage-v1.1.0/`，离线包为 `release/gptworkbot-homepage-v1.1.0-2026-10-11.zip`。原 1.0.0 首页、安装包、X 首发素材及记录保留原版本。新增公开的中英文 400px 计划恢复图片仅使用样例数据，原生会话诊断内容不发布。
+
+用户进一步选择增加自动语言切换的 GitHub Pages 展示页。展示页源码位于 `website/`，由 Actions 构建并部署到 `https://dickenson258.github.io/GptWorkBot/`。首次按浏览器首选语言显示简体中文或英文，手动切换后保存在浏览器；链接的 `?lang=zh`／`?lang=en` 优先，“自动”恢复浏览器语言。固定 1.1.0 首页 ZIP 保留 Pages 增补前的双语 README 快照；当前展示页源码和部署工作流随工程发布。
+
+仓库 README 由 GitHub 固定渲染，不能运行浏览器语言检测脚本，保留同页中英文导航并链接展示页。依据：[GitHub Markup](https://github.com/github/markup)、[GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages)。
+
+English: Release 1.1.0 recognizes complete v2 instructions in JSON fences and adds missed-plan diagnostics with explicit, confirmation-only recovery. Protocol v2, existing v2 state and historical release files are retained. A GitHub Pages website detects the browser's preferred language and remembers a manual override. The bilingual README keeps manual navigation. Automated checks and pending installed-extension acceptance are recorded separately.
+
+## 1.0.0 首次公开发布记录
+
 2026-10-11 · 产品版本 **1.0.0** · 仓库 `dickenson258/GptWorkBot`。
 
 ## 附件审核

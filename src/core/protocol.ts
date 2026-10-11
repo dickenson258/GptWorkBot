@@ -32,20 +32,34 @@ function escapeNativeReferences(json: string): string {
   }
   return escaped;
 }
-export function parseEnvelope(text: string, supervisor: boolean): SupervisorEnvelope | MemberEnvelope | undefined {
-  const blocks = [...text.matchAll(/^```work-team\s*\n([\s\S]*?)^```\s*$/gm)];
-  if (!blocks.length) return undefined;
-  if (blocks.length !== 1) throw new Error('一条回复只能有一个协作指令块，请主管整理后重发');
-  if (blocks[0][1].length > 100_000) throw new Error('协作指令过长，请拆成多轮');
-  let data: unknown;
-  try { data = JSON.parse(blocks[0][1]); }
-  catch {
-    try { data = JSON.parse(escapeNativeReferences(blocks[0][1])); }
-    catch { throw new Error(protocolFormatError); }
+type Envelope = SupervisorEnvelope | MemberEnvelope;
+export function readEnvelope(text: string, supervisor: boolean): { envelope: Envelope; language: 'work-team' | 'json' } | undefined {
+  const candidates: Array<{data: unknown; language: 'work-team' | 'json'}> = [];
+  for (const block of text.matchAll(/^```(work-team|json)\s*\n([\s\S]*?)^```\s*$/gm)) {
+    const language = block[1] as 'work-team' | 'json', payload = block[2];
+    // A normal JSON example is data. Only a complete, explicitly identified v2
+    // envelope is eligible for fallback; role and schema validation still apply.
+    const looksLikeProtocol = /"version"\s*:\s*2\b/.test(payload) && /"projectId"\s*:/.test(payload) && (supervisor ? /"actions"\s*:/.test(payload) : /"taskId"\s*:/.test(payload));
+    if (language === 'json' && !looksLikeProtocol) continue;
+    if (payload.length > 100_000) throw new Error('协作指令过长，请拆成多轮');
+    let data: unknown;
+    try { data = JSON.parse(payload); }
+    catch {
+      try { data = JSON.parse(escapeNativeReferences(payload)); }
+      catch { throw new Error(protocolFormatError); }
+    }
+    if (language === 'json' && (!data || typeof data !== 'object' || Array.isArray(data) || (data as Record<string,unknown>).version !== 2 || typeof (data as Record<string,unknown>).projectId !== 'string' || !((supervisor ? 'actions' : 'taskId') in data))) continue;
+    candidates.push({data,language});
   }
+  if (!candidates.length) return undefined;
+  if (candidates.length !== 1) throw new Error('一条回复只能有一个协作指令块，请主管整理后重发');
+  const {data,language} = candidates[0];
   const result = (supervisor ? supervisorSchema : memberSchema).safeParse(data);
   if (!result.success) throw new Error('请使用 version 2 协作协议，并提供任务轮次及完整依赖输入');
-  return result.data;
+  return {envelope:result.data,language};
+}
+export function parseEnvelope(text: string, supervisor: boolean): Envelope | undefined {
+  return readEnvelope(text,supervisor)?.envelope;
 }
 export function resolveTarget(agents: Agent[], target: string): Agent {
   const candidates = agents.filter(a => !a.supervisor && (a.id === target || a.name === target || a.url === target));

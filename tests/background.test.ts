@@ -45,6 +45,24 @@ beforeEach(() => {
 afterEach(() => { vi.useRealTimers(); });
 async function boot() { const background = await import('../src/extension/background'); await background.ready; }
 function panel(request: unknown): Promise<{ store: Store; error?: string }> { return new Promise(resolve => { listeners[0](request, { id: 'extension', url: 'chrome-extension://extension/sidepanel.html' }, resolve as (v: unknown) => void); }); }
+describe('漏登记主管计划的安全恢复', () => {
+  const missed = () => obs('lead',{turnIndex:9,messages:[{id:'missed-plan',role:'assistant' as const,turnComplete:true,text:fence({version:2,projectId:project.id,actions:[{kind:'dispatch',target:'member',title:'首发后的增长方案',instructions:'制定下一轮宣传计划'}]})}]});
+  it('读取主管最新快照后只创建草稿；自动模式也不发送或准备成员页面', async () => {
+    persisted.settings.mode='auto';persisted.processed=['lead:missed-plan'];pages.set(1,missed());
+    await boot();expect(persisted.agents[0].planDiagnostic?.recoverable).toBe(true);send.mockClear();
+    const result=await panel({type:'command',command:{type:'recover_plan',agentId:'lead',messageId:'missed-plan'}});
+    expect(result.error).toBeUndefined();expect(persisted.tasks).toHaveLength(1);expect(persisted.tasks[0]).toMatchObject({status:'draft',approved:false});
+    expect(send.mock.calls.map(([id,m])=>[id,m.type])).toEqual([[1,'snapshot']]);expect(chrome.tabs.create).not.toHaveBeenCalled();
+    await panel({type:'command',command:{type:'reconcile'}});expect(persisted.tasks).toHaveLength(1);expect(send.mock.calls.some(([,m])=>m.type==='send')).toBe(false);
+    expect((await panel({type:'command',command:{type:'recover_plan',agentId:'lead',messageId:'missed-plan'}})).error).toContain('已登记');
+  });
+  it('点击后新回复出现或主管会话已关闭时拒绝恢复，不开新窗口', async () => {
+    persisted.processed=['lead:missed-plan'];pages.set(1,missed());await boot();
+    const newer=missed();newer.messages[0].id='new-reply';pages.set(1,newer);
+    expect((await panel({type:'command',command:{type:'recover_plan',agentId:'lead',messageId:'missed-plan'}})).error).toContain('已变化');expect(persisted.tasks).toHaveLength(0);
+    tabData.delete(1);expect((await panel({type:'command',command:{type:'recover_plan',agentId:'lead',messageId:'missed-plan'}})).error).toContain('打开主管');expect(chrome.tabs.create).not.toHaveBeenCalled();
+  });
+});
 describe('持久后台调度集成', () => {
   it('重启后核对已去重的初始化回复，解除执行中并连接协议，不重发消息', async () => {
     persisted.paused=true; persisted.agents[0].initialized=false;

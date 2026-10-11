@@ -6,6 +6,7 @@ Each archive preserves the Chinese and English product introductions, requiremen
 
 | Date | Product version | Document version | Snapshot |
 | --- | --- | --- | --- |
+| October 11, 2026 | `1.1.0` | Homepage `1.1.0` | [Bilingual homepage with plan recovery](2026-10-11-homepage-v1.1.0/README.en.md) |
 | October 11, 2026 | `1.0.0` | Homepage `1.0.0` | [Reviewed bilingual homepage](2026-10-11-homepage-v1.0.0/README.en.md) |
 | October 10, 2026 | `0.2.0` | `2.0` | [Product, requirements and protocol snapshot](2026-10-10-v0.2.0/README.en.md) |
 | October 10, 2026 | `0.1.8` | `1.0` | [Product and requirements snapshot](2026-10-10-v0.1.8/README.en.md) |
@@ -15,3 +16,5 @@ Download [gptworkbot-docs-v0.1.8-2026-10-10.zip](../../release/gptworkbot-docs-v
 0.2.0 archive: [gptworkbot-docs-v0.2.0-2026-10-10.zip](../../release/gptworkbot-docs-v0.2.0-2026-10-10.zip).
 
 1.0.0 homepage package: [gptworkbot-homepage-v1.0.0-2026-10-11.zip](../../release/gptworkbot-homepage-v1.0.0-2026-10-11.zip). The snapshot preserves the reviewed homepage and assets, plus source-package and output SHA-256 records.
+
+1.1.0 homepage package: [gptworkbot-homepage-v1.1.0-2026-10-11.zip](../../release/gptworkbot-homepage-v1.1.0-2026-10-11.zip). Preserves the 1.1.0 changes and recovery instructions; earlier archives remain unchanged.

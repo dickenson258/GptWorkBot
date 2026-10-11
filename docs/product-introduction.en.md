@@ -8,13 +8,13 @@ GptWorkBot is a Chrome extension for individual developers. It organizes indepen
 
 | Item | Current status |
 | --- | --- |
-| Product version | `1.0.0` · testing phase |
+| Product version | `1.1.0` · testing phase |
 | Runtime | Chrome Manifest V3 extension with a native side panel |
 | Supported conversations | Independent Work conversations within one ChatGPT project |
 | Connection | Uses your existing signed-in session; no API key needed |
 | Languages | Simplified Chinese / English interface; bilingual product and requirements documents |
 | Storage | Browser extension local storage; no separate backend |
-| Documentation baseline | October 11, 2026 · document version `2.1` |
+| Documentation baseline | October 11, 2026 · document version `2.2` |
 
 ## Why GptWorkBot
 
@@ -63,6 +63,7 @@ If the result is rejected, the supervisor guides the original task for a new att
 | Collect and accept results | Forward member results for supervisor acceptance, with manual user acceptance available |
 | Automatic collaboration | Default limit: 5 consecutive rounds; member concurrency defaults to 2 and supports 1–4 |
 | Connection and recovery | Prepare pages before sending, confirm initialization one role at a time, and identify interruptions or uncertain delivery |
+| Missed-plan diagnosis | Show why a plan was not registered and reread the current supervisor plan as unapproved drafts without duplicate dispatch |
 | Draft protection | Preserve user drafts; resume a matching, fully unsent extension draft after an explicit retry |
 | Pause, stop, and unbind | Pause future messages, check native execution, and remove local role bindings |
 
@@ -98,7 +99,7 @@ You define role names and responsibilities. The extension coordinates conversati
 
 0.2.0 uses protocol v2 and new storage without migrating old tasks. After upgrading, rebind the team and connect collaboration. Old storage remains inactive. This first release excludes arbitrary conditions, structured artifact extraction, and external file transfer.
 
-1. Use the project’s `dist` build or extract `release/gptworkbot-1.0.0.zip`.
+1. Use the project’s `dist` build or extract `release/gptworkbot-1.1.0.zip`.
 2. Enable Developer mode at `chrome://extensions` and load the folder containing `manifest.json`. The minimum supported browser version is Chrome 120.
 3. Refresh your open ChatGPT pages and click the GptWorkBot icon to open the sidebar.
 4. Connect your project and bind existing roles, or use “Add role” to create a team. Confirm the participating conversations use Work mode.
@@ -125,7 +126,7 @@ GptWorkBot is an independent project, not an official OpenAI extension. ChatGPT�
 
 ## Validation status
 
-For `1.0.0`, all 273 automated tests across 14 files pass, together with type checking, building, and installation ZIP integrity checks. Coverage includes dependency chains, revision attempts, frozen inputs, the protocol, queues, states, draft protection, receipt recovery, role creation, naming, initialization scheduling, language preferences, owning-project discovery, and conversation address deduplication.
+For `1.1.0`, all 302 automated tests across 16 files pass, together with type checking, building, and installation ZIP integrity checks. Coverage includes dependency chains, revision attempts, frozen inputs, the protocol, queues, states, draft protection, receipt recovery, role creation, naming, initialization scheduling, language preferences, owning-project discovery, and conversation address deduplication.
 
 Real Work controls and some native operations have been checked. The complete installed-extension flow—supervisor, multiple members, result forwarding, and acceptance—still requires manual acceptance testing. The current version is intended for version testing, with production stability still to be assessed.
 

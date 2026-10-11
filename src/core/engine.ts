@@ -1,13 +1,17 @@
 import { addLog, emptyStore, uid, conversationId, validProjectUrl, projectIdFromUrl } from './types';
-import type { Agent, Observation, PageMessage, PanelCommand, Store, Task } from './types';
-import { bootstrapPrompt, parseEnvelope, protocolFormatError, resolveTarget, type MemberEnvelope, type SupervisorEnvelope } from './protocol';
+import type { Agent, Observation, PageMessage, PanelCommand, PlanDiagnostic, Store, Task } from './types';
+import { bootstrapPrompt, parseEnvelope, readEnvelope, protocolFormatError, resolveTarget, type MemberEnvelope, type SupervisorEnvelope } from './protocol';
 import { createAgentSchema, ensureNewAgentName } from './creation';
 import { businessTask, inputsForDependencies, resolveDependencies, validateDependencies } from './dependencies';
 export function makeTask(input: Partial<Task> & Pick<Task, 'kind' | 'senderId' | 'targetId' | 'title' | 'instructions'>): Task {
   return { id: uid(), roundId: uid(), context: '', acceptance: '', status: 'draft', approved: false, sourceKey: '', createdAt: Date.now(), deliveryToken: uid(), attempt:1, dependsOn:[], inputs:[], resultHistory:[], ...input };
 }
 export function applyCommand(store: Store, command: PanelCommand): Store {
-  if (command.type === 'bind_many') {
+  if (command.type === 'recover_plan') {
+    const observation = store.agents.find(a => a.id === command.agentId)?.observation;
+    if (!observation) throw new Error('请先打开主管会话并重新核对');
+    recoverSupervisorPlan(store, command.agentId, command.messageId, observation);
+  } else if (command.type === 'bind_many') {
     if (!command.agents.length || command.agents.length > 50 || command.agents.filter(a => a.supervisor).length !== 1) throw new Error('请选择 1 位主管及需要加入的成员');
     const draft = structuredClone(store);
     command.agents.forEach(agent => applyCommand(draft, { type: 'bind', agent }));
@@ -127,7 +131,7 @@ function ensureAcceptance(task: Task | undefined, attempt: number) {
   const latest = task.resultHistory.at(-1);
   if (attempt !== task.attempt || latest?.attempt !== attempt || latest.status !== 'completed') throw new Error('任务轮次已变化，请重新核对当前成果');
 }
-function proposal(store: Store, agent: Agent, envelope: SupervisorEnvelope, sourceKey: string) {
+function proposal(store: Store, agent: Agent, envelope: SupervisorEnvelope, sourceKey: string, requireConfirmation = false) {
   const roundId = uid(), drafts: Task[] = [], accepts: Task[] = [];
   const revisions: Array<{original:Task; nextAttempt:number}> = [];
   const controls = new Set<string>();
@@ -171,12 +175,66 @@ function proposal(store: Store, agent: Agent, envelope: SupervisorEnvelope, sour
     original.reason='等待主管指导送达并提交新版成果';
     addLog(store,`已安排修订：${original.title}，第 ${nextAttempt} 轮`);
   });
-  if (drafts.length && store.settings.mode === 'auto') {
+  if (drafts.length && store.settings.mode === 'auto' && !requireConfirmation) {
     if (store.autoRounds >= store.settings.maxAutoRounds) {store.paused=true;addLog(store,'自动轮数已达上限，请检查后恢复协作');}
     else {store.autoRounds++;store.autoRoundIds.push(roundId);drafts.forEach(t => {t.approved=true;t.status='queued';});}
   }
   store.tasks.push(...drafts);
-  if (drafts.length) addLog(store,`主管提出 ${drafts.length} 项任务${store.settings.mode === 'confirm' || store.paused ? '，等待确认' : ''}`);
+  if (drafts.length) addLog(store,`主管提出 ${drafts.length} 项任务${requireConfirmation || store.settings.mode === 'confirm' || store.paused ? '，等待确认' : ''}`);
+}
+
+function diagnosePlan(store: Store, agent: Agent, observation: Observation, status: PlanDiagnostic['status'], reason: string) {
+  if (!agent.supervisor) return;
+  const message = observation.messages.filter(m => m.role === 'assistant').at(-1);
+  if (!message || message.turnComplete === false || observation.running || observation.interaction) { agent.planDiagnostic = undefined; return; }
+  let envelope: SupervisorEnvelope | undefined;
+  try { envelope = parseEnvelope(message.text, true) as SupervisorEnvelope | undefined; }
+  catch (error) {
+    agent.planDiagnostic = {messageId:message.id,status:'invalid',reason:(error as Error).message,recoverable:false,titles:[]};
+    return;
+  }
+  if (!envelope?.actions.some(a => a.kind === 'dispatch' || a.kind === 'create')) { agent.planDiagnostic = undefined; return; }
+  if (envelope.projectId !== store.project?.id) { agent.planDiagnostic = undefined; return; }
+  const registered = store.tasks.some(t => t.sourceKey === `${agent.id}:${message.id}`);
+  const diagnostic: PlanDiagnostic = {
+    messageId: message.id, status: registered ? 'registered' : status,
+    reason: registered ? '当前主管计划已登记' : reason,
+    recoverable: !registered && agent.initialized && envelope.actions.every(a => a.kind === 'dispatch' || a.kind === 'create'),
+    titles: envelope.actions.flatMap(a => a.kind === 'dispatch' || a.kind === 'create' ? [a.title] : []),
+    turnIndex: observation.turnIndex, previousTurnIndex: agent.lastTurnIndex
+  };
+  const previous = agent.planDiagnostic;
+  // Heartbeats must preserve the first explanation, rather than replacing a
+  // known baseline/turn-filter failure with the generic deduplication reason.
+  if (!registered && status === 'processed' && previous?.messageId === message.id && previous.status !== 'registered') {
+    diagnostic.status = previous.status; diagnostic.reason = previous.reason;
+    diagnostic.previousTurnIndex = previous.previousTurnIndex;
+  }
+  agent.planDiagnostic = diagnostic;
+  if (!registered && (previous?.messageId !== diagnostic.messageId || previous.status !== diagnostic.status)) addLog(store, `${agent.name}：${diagnostic.reason}`);
+}
+
+// Recovery is an explicit reread of one visible supervisor reply, never a replay
+// of conversation history. Even in auto mode, the recovered batch stays unapproved.
+export function recoverSupervisorPlan(store: Store, agentId: string, messageId: string, observation: Observation): void {
+  const agent = store.agents.find(a => a.id === agentId && a.supervisor);
+  if (!agent || !agent.initialized) throw new Error('请先连接主管协作协议');
+  if (!store.project || !observation.connected || conversationId(observation.url) !== agent.id || observation.projectId !== store.project.id || agent.projectId !== store.project.id) throw new Error('请先打开当前项目的主管会话并重新核对');
+  if (observation.running || observation.interaction) throw new Error('请等待主管回复完成并处理原生交互');
+  const message = observation.messages.filter(m => m.role === 'assistant').at(-1);
+  if (!message || message.id !== messageId || message.turnComplete === false) throw new Error('主管最新回复已变化，请重新核对当前计划');
+  const sourceKey = `${agent.id}:${message.id}`;
+  if (store.tasks.some(t => t.sourceKey === sourceKey)) throw new Error('此主管计划已登记，不会重复导入');
+  if (!agent.planDiagnostic?.recoverable || agent.planDiagnostic.messageId !== messageId) throw new Error('请先重新核对当前主管计划');
+  const envelope = parseEnvelope(message.text, true) as SupervisorEnvelope | undefined;
+  if (!envelope || envelope.projectId !== store.project?.id) throw new Error('协作指令的项目标识不匹配');
+  if (!envelope.actions.every(a => a.kind === 'dispatch' || a.kind === 'create')) throw new Error('重新读取只支持派发计划；验收或修订请由主管重新确认');
+  proposal(store, agent, envelope, sourceKey, true);
+  agent.observation = observation;
+  agent.lastTurnIndex = observation.turnIndex;
+  store.processed = [...new Set([...store.processed, sourceKey])];
+  diagnosePlan(store, agent, observation, 'registered', '当前主管计划已登记');
+  addLog(store, '已重新读取主管计划，等待用户确认；尚未派发');
 }
 function result(store: Store, agent: Agent, envelope: MemberEnvelope, sourceKey: string) {
   const task = store.tasks.find(t => t.id === envelope.taskId && t.targetId === agent.id && t.deliveredAt && t.kind === 'dispatch');
@@ -249,31 +307,50 @@ export function ingestObservation(store: Store, agentId: string, observation: Ob
   settleCompletedDeliveries(store, agent, observation);
   // First connection establishes a baseline: historical proposals never trigger sends.
   if (!previous) {
+    diagnosePlan(store, agent, observation, 'baseline', '当前主管计划被视为连接前的历史回复，尚未登记');
     agent.lastTurnIndex = observation.turnIndex;
     observation.messages.filter(m => m.role === 'assistant' && m.turnComplete !== false).forEach(m => store.processed.push(`${agent.id}:${m.id}`));
     return;
   }
-  if (observation.running || observation.interaction) return;
+  if (observation.running || observation.interaction) { agent.planDiagnostic = undefined; return; }
   // Work virtualizes old turns. Only the newest visible final is actionable, and
   // loading older turns never moves the observed turn watermark backwards.
-  if (observation.turnIndex !== undefined && agent.lastTurnIndex !== undefined && observation.turnIndex < agent.lastTurnIndex) return;
+  if (observation.turnIndex !== undefined && agent.lastTurnIndex !== undefined && observation.turnIndex < agent.lastTurnIndex) {
+    diagnosePlan(store, agent, observation, 'older_turn', '当前主管计划的页面轮次低于已记录轮次，尚未登记');
+    return;
+  }
   if (observation.turnIndex !== undefined) agent.lastTurnIndex = observation.turnIndex;
   const newest = observation.messages.filter(m => m.role === 'assistant').at(-1);
-  if (newest?.turnComplete === false) return;
+  if (newest?.turnComplete === false) { agent.planDiagnostic = undefined; return; }
+  if (!newest || store.processed.includes(`${agent.id}:${newest.id}`)) {
+    diagnosePlan(store, agent, observation, 'processed', '当前主管回复已标记为处理过，但派发计划尚未登记');
+  }
   const newMessages = newest && !store.processed.includes(`${agent.id}:${newest.id}`) ? [newest] : [];
   observation.messages.filter(m => m.role === 'assistant' && m !== newest).forEach(m => store.processed.push(`${agent.id}:${m.id}`));
   for (const message of newMessages) {
     const sourceKey = `${agent.id}:${message.id}`;
     try {
-      const envelope = parseEnvelope(message.text, agent.supervisor);
+      const parsed = readEnvelope(message.text, agent.supervisor);
+      const envelope = parsed?.envelope;
       if (envelope && (agent.initialized || store.tasks.some(t => t.targetId === agent.id && t.kind === 'bootstrap' && t.deliveredAt))) {
         if (envelope.projectId !== store.project?.id) throw new Error('协作指令的项目标识不匹配');
-        if (agent.supervisor) proposal(store, agent, envelope as SupervisorEnvelope, sourceKey);
+        if (agent.supervisor) {
+          proposal(store, agent, envelope as SupervisorEnvelope, sourceKey, parsed?.language === 'json');
+          if (parsed?.language === 'json' && (envelope as SupervisorEnvelope).actions.some(a => a.kind === 'dispatch' || a.kind === 'create')) addLog(store, '主管使用 json 代码块，计划已登记为待确认');
+          diagnosePlan(store, agent, observation, 'registered', '当前主管计划已登记');
+        }
         else result(store, agent, envelope as MemberEnvelope, sourceKey);
+      } else {
+        diagnosePlan(store, agent, observation, 'not_initialized', '主管协作路由尚未连接，当前计划未登记');
       }
     } catch (error) {
       agent.observation.interaction = (error as Error).message;
       addLog(store, `${agent.name}：${(error as Error).message}`);
+      if (agent.supervisor) {
+        // Record valid plans whose batch validation failed, so a fixed local
+        // prerequisite can be checked again without repeating the ChatGPT turn.
+        diagnosePlan(store, agent, { ...observation, interaction: undefined }, 'invalid', (error as Error).message);
+      }
     }
     store.processed.push(sourceKey);
   }

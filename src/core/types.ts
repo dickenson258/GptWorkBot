@@ -5,9 +5,14 @@ export interface Agent {
   id: string; name: string; url: string; projectId: string; supervisor: boolean;
   userVerifiedWork: boolean; initialized: boolean; tabId?: number;
   observation?: Observation; lastTurnIndex?: number;
+  planDiagnostic?: PlanDiagnostic;
   tabClosed?: boolean; tabOpening?: boolean;
   responsibilities?: string;
   conversationNameStatus?: 'pending' | 'renaming' | 'synced' | 'waiting'; conversationNameReason?: string;
+}
+export interface PlanDiagnostic {
+  messageId: string; status: 'baseline' | 'older_turn' | 'processed' | 'not_initialized' | 'registered' | 'invalid';
+  reason: string; recoverable: boolean; titles: string[]; turnIndex?: number; previousTurnIndex?: number;
 }
 export interface Observation {
   url: string; title: string; projectId?: string; projectUrl?: string;
@@ -37,6 +42,7 @@ export interface Store {
   processed: string[]; events: LogEntry[];
 }
 export type PanelCommand =
+  | { type: 'recover_plan'; agentId: string; messageId: string }
   | { type: 'configure'; project: Project }
   | { type: 'bind'; agent: Agent }
   | { type: 'bind_many'; agents: Agent[] }

@@ -21,6 +21,7 @@ export function stateFor(agent: Agent, store: Store, now = Date.now()): { state:
   }
   const waiting = store.tasks.find(t => t.targetId === agent.id && ['waiting', 'uncertain'].includes(t.status));
   if (observation.interaction || waiting) return { state: 'needs_interaction', reason: observation.interaction || waiting?.reason || '需要继续处理' };
+  if (agent.supervisor && agent.planDiagnostic && agent.planDiagnostic.status !== 'registered') return { state: 'needs_interaction', reason: agent.planDiagnostic.reason };
   if (agent.supervisor && store.tasks.some(t => t.status === 'draft')) return { state: 'needs_interaction', reason: '有一轮任务等待用户确认' };
   if (observation.running || store.tasks.some(t => t.targetId === agent.id && ['sending', 'running'].includes(t.status))) return { state: 'running', reason: store.tasks.some(t => t.targetId === agent.id && t.kind === 'bootstrap' && t.status === 'running' && t.deliveredAt) ? '初始化消息已送达，等待 Work 返回就绪确认' : '正在处理当前任务' };
   if (agent.conversationNameStatus === 'waiting') return { state: 'needs_interaction', reason: agent.conversationNameReason || '会话名称待同步' };

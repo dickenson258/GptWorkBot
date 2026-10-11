@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f7f8f0"/><stop offset="1" stop-color="#e7eee7"/></linearGradient>
+  </defs>
+  <rect width="1200" height="675" fill="url(#bg)"/>
+  <g font-family="Arial, Helvetica, sans-serif" fill="#183c31">
+    <rect x="64" y="52" width="54" height="54" rx="16" fill="#305f50"/>
+    <path d="M81 71v16m0-8c0 13 19 13 19-3" fill="none" stroke="#fff" stroke-width="2.5"/>
+    <g fill="#fff"><circle cx="81" cy="70" r="3.5"/><circle cx="81" cy="88" r="3.5"/><circle cx="100" cy="73" r="3.5"/></g>
+    <text x="134" y="88" font-size="34" font-weight="700">GptWorkBot</text>
+    <text x="64" y="152" font-size="13" font-weight="700" letter-spacing="2.3" fill="#527167">BUILT FOR INDIVIDUAL DEVELOPERS</text>
+    <text x="60" y="224" font-size="52" font-weight="700" letter-spacing="-1.5">Turn your Work chats</text>
+    <text x="60" y="284" font-size="52" font-weight="700" letter-spacing="-1.5">into a team.</text>
+    <text x="64" y="339" font-size="21" fill="#4b655c">Delegate tasks. Follow dependencies.</text>
+    <text x="64" y="370" font-size="21" fill="#4b655c">Review results in your Chrome sidebar.</text>
+    <rect x="64" y="412" width="161" height="38" rx="19" fill="#dce8df"/>
+    <text x="85" y="437" font-size="16" font-weight="700">v1.0.0 · BETA</text>
+    <rect x="237" y="412" width="147" height="38" rx="19" fill="#f9faf5" stroke="#c6d6cb"/>
+    <text x="259" y="437" font-size="16">No API key</text>
+    <rect x="396" y="412" width="160" height="38" rx="19" fill="#f9faf5" stroke="#c6d6cb"/>
+    <text x="418" y="437" font-size="16">Chrome sidebar</text>
+
+    <rect x="672" y="142" width="464" height="330" rx="26" fill="#fdfefb" stroke="#c8d8ce"/>
+    <text x="701" y="176" font-size="13" font-weight="700" letter-spacing="1.5" fill="#688276">ONE GOAL. CLEAR ROLES.</text>
+    <path d="M904 261v23H790v18m114-18h111v18" stroke="#bfd0c3" stroke-width="2" fill="none"/>
+    <rect x="803" y="202" width="200" height="59" rx="14" fill="#e8f1e9" stroke="#b8cfbc"/>
+    <circle cx="828" cy="231" r="5" fill="#62a382"/>
+    <text x="843" y="237" font-size="20" font-weight="700">Supervisor</text>
+    <rect x="698" y="302" width="184" height="79" rx="14" fill="#fff" stroke="#d2ded5"/>
+    <circle cx="718" cy="327" r="5" fill="#c67471"/>
+    <text x="732" y="334" font-size="18" font-weight="700">Analysis</text>
+    <text x="718" y="360" font-size="14" fill="#668075">Running</text>
+    <rect x="920" y="302" width="190" height="79" rx="14" fill="#fff" stroke="#d2ded5"/>
+    <circle cx="940" cy="327" r="5" fill="#62a382"/>
+    <text x="954" y="334" font-size="18" font-weight="700">Marketing</text>
+    <text x="940" y="360" font-size="14" fill="#668075">Waiting for analysis</text>
+    <text x="703" y="422" font-size="16" font-weight="700">Analysis → supervisor review → marketing</text>
+    <text x="703" y="447" font-size="13" fill="#72897e">Share the result before the next task starts.</text>
+
+    <path d="M64 510h1072" stroke="#c9d8cd"/>
+    <text x="64" y="565" font-size="28" font-weight="700">Sharing the code. Building together.</text>
+    <text x="64" y="604" font-size="22" fill="#3c6656">github.com/dickenson258/GptWorkBot</text>
+    <rect x="826" y="543" width="310" height="64" rx="17" fill="#305f50"/>
+    <text x="852" y="571" font-size="20" font-weight="700" fill="#fff">Explore code + docs →</text>
+    <text x="852" y="594" font-size="15" fill="#dfebe3">Feedback welcome.</text>
+    <text x="64" y="645" font-size="12" fill="#6e8579">Workflow illustration · Existing ChatGPT account access required · Independent project</text>
+  </g>
+</svg>

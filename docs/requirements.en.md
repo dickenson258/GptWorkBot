@@ -4,8 +4,8 @@
 
 | Document information | Value |
 | --- | --- |
-| Document version | `2.1` |
-| Product baseline | `1.0.0` |
+| Document version | `2.2` |
+| Product baseline | `1.1.0` |
 | Recorded | October 11, 2026 · Asia/Shanghai |
 | Target platform | Chrome Manifest V3, minimum Chrome 120 |
 | Target users | Individual developers using ChatGPT projects and Work |
@@ -189,6 +189,8 @@ Acceptance criteria:
 
 Use a single `work-team` JSON code block. The supervisor supports `dispatch`, `create`, `resume`, and `accept`. Members report their own task as `completed` or `needs_interaction`.
 
+Complete v2 envelopes labelled `json` retain strict schema and ownership checks. Supervisor dispatch plans always await confirmation, even in automatic mode. Ordinary JSON and historical replies do not dispatch work. A plan skipped by the connection baseline, page turn filter or processed-message filter shows a reason and yellow dot. “Read current plan again” validates the visible final reply and whole batch, rejects registered sources and mixed acceptance/revision actions, and creates unapproved drafts only. Continuing the conversation does not authorize historical dispatches.
+
 Acceptance criteria:
 
 - Process final assistant replies from bound roles only; do not execute thinking, unfinished streams, or ordinary quotations.
@@ -309,7 +311,11 @@ Acceptance criteria:
 - Member results, supervisor acceptance and revision guidance identify the current attempt. Revision increments it, preserves history and invalidates older results/acceptance. New results must be reported and accepted again.
 - Show prerequisite tasks, input sources, attempt and completion/delivery/acceptance waiting reasons. Normal waiting is green and actionable issues yellow, including before the downstream page is opened.
 - Draft prerequisites are editable with automatic mappings and cycle validation; approved relationships are fixed. Unlocking does not request approval again or count as a new automatic round.
-- Use gptworkbot-state-v2 only; retain old storage inactive. Rebind and connect the new protocol when upgrading from v1; updates from 0.2.x to 1.0.0 retain the v2 team and queue. Do not implement arbitrary predicates, artifact-field extraction or external file transfer.
+- Use gptworkbot-state-v2 only; retain old storage inactive. Rebind and connect the new protocol when upgrading from v1; updates from 0.2.x / 1.0.0 to 1.1.0 retain the v2 team and queue. Do not implement arbitrary predicates, artifact-field extraction or external file transfer.
+
+### FR-15: Public website language selection
+
+The GitHub Pages product website runs independently of the extension. Choose an explicit URL language first, a saved manual choice second and the primary browser language last. Chinese tags use Simplified Chinese; other tags use English. Support manual switching, an Auto reset, restricted storage and a no-JavaScript fallback. Localize content, images, alt text and documentation links together. Generate download versions from package.json. Publish only page files and allowlisted display assets, excluding task state, native chats and extension background code. The repository README retains same-page bilingual navigation and links to the website.
 
 ## 5. States and information structure
 
@@ -370,10 +376,12 @@ The basic business flow is `draft → queued → sending → running → reporte
 
 ### 7.1 Current validation baseline
 
-For `1.0.0`: all 273 tests across 14 files pass, together with strict type checking, building, and installation ZIP integrity checks.
+For `1.1.0`: all 302 tests across 16 files pass, together with strict type checking, building, and installation ZIP integrity checks.
 
 | Area | Current evidence |
 | --- | --- |
+| Website language precedence, persistence, fallbacks and isolated deployment artifact | `tests/homepage.test.ts` |
+| Supervisor JSON instructions, missed-plan diagnosis and explicit recovery | `tests/supervisor-plans.test.ts` |
 | Dependencies, revision attempts, snapshots, atomic graph validation | `tests/dependencies.test.ts` |
 | Protocol, role identity, queues, concurrency | `tests/core.test.ts` |
 | Initialization/completion settlement, late loading | `tests/completion.test.ts` |

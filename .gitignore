@@ -1,5 +1,6 @@
 node_modules/
 dist/
+pages-dist/
 coverage/
 .DS_Store
 *.log
@@ -11,3 +12,5 @@ coverage/
 # Local diagnostic images can contain native conversation or account details.
 docs/evidence/*
 !docs/evidence/gptworkbot-*.png
+!docs/evidence/gptworkbot-plan-recovery-zh-400.jpg
+!docs/evidence/gptworkbot-plan-recovery-en-400.jpg

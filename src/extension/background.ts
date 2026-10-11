@@ -1,4 +1,4 @@
-import { applyCommand, ingestObservation, makeTask } from '../core/engine';
+import { applyCommand, ingestObservation, makeTask, recoverSupervisorPlan } from '../core/engine';
 import { activeBootstrap, eligibleTasks } from '../core/state';
 import { bootstrapPrompt, taskPrompt, creationPrompt } from '../core/protocol';
 import { addLog, conversationId, conversationRouteId, emptyStore, projectIdFromUrl, uid, validCreationUrl, storageKey } from '../core/types';
@@ -319,7 +319,24 @@ chrome.runtime.onMessage.addListener((request, sender, respond) => {
     (async () => {
       const command = request.command as PanelCommand;
       if (!command || typeof command.type !== 'string') throw new Error('无效操作');
-      if (command.type === 'reconcile') {
+      if (command.type === 'recover_plan') {
+        const current = await snapshot();
+        const agent = current.agents.find(a => a.id === command.agentId && a.supervisor);
+        if (!agent) throw new Error('请先连接主管协作协议');
+        const tab = findTab(agent, await chrome.tabs.query({url:'https://chatgpt.com/*'}));
+        if (tab?.id === undefined) throw new Error('请先打开主管会话并重新核对');
+        // Fresh read only: do not prepare a member page or let auto mode ingest
+        // this missed reply before explicitly staging it for confirmation.
+        const page = await readTab<Observation>(tab.id, 'snapshot');
+        if (!validObservation(page)) throw new Error('未读取到有效的主管会话');
+        await transaction(s => {
+          recoverSupervisorPlan(s, command.agentId, command.messageId, page);
+          const lead = s.agents.find(a => a.id === command.agentId)!;
+          lead.tabId = tab.id; lead.tabClosed = false; lead.tabOpening = false;
+          if (lead.observation) lead.observation.messages = page.messages.slice(-8).map(m => ({...m,text:m.role === 'user' ? m.text.slice(0,500) : ''}));
+        });
+        return overview();
+      } else if (command.type === 'reconcile') {
         await reconnectOpenTabs();
         await transaction(s => { addLog(s, '已重新核对打开的会话；未确认的发送不会重发'); });
       } else if (command.type === 'sync_name') {

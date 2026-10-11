@@ -2,7 +2,7 @@
 
 [简体中文](architecture.md) · **English**
 
-Product baseline `1.0.0`, protocol `version: 2`. Read and write only `gptworkbot-state-v2`. Updates from 0.2.x to 1.0.0 retain the v2 team and queue. Upgrades from v1 require rebinding the team and connecting collaboration; old storage is retained without migration or dispatch, and v1 messages are rejected.
+Product baseline `1.1.0`, protocol `version: 2`. Read and write only `gptworkbot-state-v2`. Updates from 0.2.x / 1.0.0 to 1.1.0 retain the v2 team and queue. Upgrades from v1 require rebinding the team and connecting collaboration; old storage is retained without migration or dispatch, and v1 messages are rejected.
 
 ## JSON encoding and native file references
 
@@ -33,6 +33,10 @@ Independent tasks may run in parallel within member concurrency. Dependent tasks
 ## Supervisor envelope
 
 Only the bound supervisor’s newest completed final assistant message can provide one `work-team` JSON block. Thoughts, tool output, historical proposals, quotations, and member result text cannot dispatch work. Each batch has at most 12 actions.
+
+A `json`-labelled block containing a complete v2 envelope is also validated for project, role, fields and whole-batch dependencies. Dispatch plans from this fallback always await user confirmation, including in automatic mode. Ordinary JSON examples, incomplete envelopes and unfenced text do not become plans; multiple collaboration envelopes in one reply are rejected. Complete member reports labelled `json` must still match a delivered task and its current attempt.
+
+When a plan is skipped as a connection baseline, filtered by a lower page turn number, or marked processed without being registered, the supervisor shows a yellow dot and the reason. “Read current plan again” reads only the currently visible final supervisor reply and checks its expected message ID, project and whole batch. Registered sources cannot be imported twice; mixed acceptance/revision instructions cannot be replayed through this entry. Recovery creates unapproved drafts and resets the current page turn baseline. After user confirmation, dependencies and pause still apply. Earlier historical plans are never scanned or dispatched automatically.
 
 ```work-team
 {

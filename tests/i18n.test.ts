@@ -50,7 +50,7 @@ describe('localized display without rewriting user content', () => {
   });
   it('has English translations for every static interface label used by the panel and form', () => {
     const translate = translator('en');
-    for (const file of ['src/panel/main.tsx', 'src/panel/CreateRoleDialog.tsx']) {
+    for (const file of ['src/panel/main.tsx', 'src/panel/CreateRoleDialog.tsx', 'src/panel/SupervisorPlanNotice.tsx']) {
       const source = ts.createSourceFile(file, readFileSync(file, 'utf8'), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
       function visit(node: ts.Node) {
         if (ts.isCallExpression(node) && node.expression.getText(source) === 'tr' && ts.isStringLiteral(node.arguments[0])) {

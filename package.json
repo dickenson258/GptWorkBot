@@ -1,10 +1,11 @@
 {
   "name": "gptworkbot",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "description": "Local-first coordination for independent ChatGPT Work conversations in one project.",
   "scripts": {
+    "build:pages": "node scripts/build-pages.mjs",
     "docs:sync-homepage": "node scripts/sync-homepage.mjs",
     "docs:check-homepage": "node scripts/sync-homepage.mjs --check",
     "dev": "vite --host 127.0.0.1",

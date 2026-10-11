@@ -6,14 +6,16 @@
 
 面向个人开发者的 Chrome 侧栏插件。在主管会话里下达目标，在侧栏查看团队、审核计划与成果，让不同角色按任务依赖接续工作。已有项目上下文与职责继续沿用，无需另外配置 API Key 或独立协作后台。
 
-**1.0.0 · Chrome 120+ · 简体中文 / English · 使用已有 ChatGPT 登录 · 版本测试阶段**
+**1.1.0 · Chrome 120+ · 简体中文 / English · 使用已有 ChatGPT 登录 · 版本测试阶段**
 
-[English](#english) · [下载安装包](https://github.com/dickenson258/GptWorkBot/releases/tag/v1.0.0) · [开始使用](#开始使用) · [详细文档](docs/README.md)
+[English](#english) · [下载安装包](https://github.com/dickenson258/GptWorkBot/releases/tag/v1.1.0) · [开始使用](#开始使用) · [详细文档](docs/README.md)
+
+[产品展示页](https://dickenson258.github.io/GptWorkBot/)：按浏览器首选语言自动显示中文或英文，可手动切换并记住选择。仓库 README 保留同页双语入口。
 
 <details>
 <summary>English 页面加载失败？</summary>
 
-English 入口直接跳转到本页英文区段。若独立英文文档的 GitHub 文件预览显示 “Error loading page”，可返回本页继续阅读，或下载 [离线中英文首页归档](https://github.com/dickenson258/GptWorkBot/releases/download/v1.0.0/gptworkbot-homepage-v1.0.0-2026-10-11.zip)。
+English 入口直接跳转到本页英文区段。若独立英文文档的 GitHub 文件预览显示 “Error loading page”，可返回本页继续阅读，或下载 [离线中英文首页归档](https://github.com/dickenson258/GptWorkBot/releases/download/v1.1.0/gptworkbot-homepage-v1.1.0-2026-10-11.zip)。
 
 </details>
 
@@ -58,7 +60,7 @@ flowchart LR
 
 账号需能够访问所用的 ChatGPT 项目、Work 与工具。插件目前通过 Chrome 开发者模式加载，尚未上架扩展商店。
 
-1. 从 [1.0.0 Release](https://github.com/dickenson258/GptWorkBot/releases/tag/v1.0.0) 下载 `gptworkbot-1.0.0.zip` 并解压。
+1. 从 [1.1.0 Release](https://github.com/dickenson258/GptWorkBot/releases/tag/v1.1.0) 下载 `gptworkbot-1.1.0.zip` 并解压。
 2. 打开 `chrome://extensions`，开启“开发者模式”，选择“加载已解压的扩展程序”，选中包含 `manifest.json` 的目录。
 3. 刷新 ChatGPT，打开 GptWorkBot 侧栏，进入已有项目或其中一个 Work 会话。
 4. “绑定会话”→“读取当前项目”，选取主管与成员，确认 Work 模式，连接项目并批量加入；也可通过“新增角色”创建当前项目的角色。
@@ -81,9 +83,13 @@ npm run verify-package
 
 构建后加载 `dist/`。开发预览、角色创建、恢复及完整命令见 [开发与使用说明](docs/development.md)。
 
-### 升级到 1.0.0
+### 升级到 1.1.0
 
-在同一扩展目录更新已有 0.2.x 安装，重新加载扩展、刷新 ChatGPT 并重开侧栏，v2 团队与任务保留。“重新核对会话”可恢复因原生文件引用引号导致解析失败的已送达回报。从 v1 安装升级时，重新读取项目、绑定团队并连接新版协议。协议继续为 v2，存储键为 `gptworkbot-state-v2`。
+在同一扩展目录更新已有 0.2.x／1.0.0 安装，重新加载扩展、刷新 ChatGPT 并重开侧栏，v2 团队与任务保留。“重新核对会话”可恢复因原生文件引用引号导致解析失败的已送达回报。从 v1 安装升级时，重新读取项目、绑定团队并连接新版协议。协议继续为 v2，存储键为 `gptworkbot-state-v2`。
+
+### 1.1.0 更新
+
+完整 v2 协作指令即使使用 `json` 代码块也能识别，主管派发先进入待确认。漏登记的当前计划会显示原因，并提供“重新读取当前计划”入口；恢复后检查草稿并确认本轮，依赖与暂停规则仍生效。继续对话不会自动补派历史计划。
 
 ## 运行与数据
 
@@ -97,7 +103,7 @@ GptWorkBot 是独立项目，非 OpenAI 官方扩展。
 
 ## 验证与文档
 
-1.0.0 基于已有 v2 实现发布。273 项自动化测试、类型检查、构建与安装包校验通过；原生页面及现场 DOM 重放的范围单独记录。已安装扩展的完整“分析 → 回传 → 验收 → 营销 → 汇总”及异常流程仍保留为人工验收项。
+当前 1.1.0 源码共 302 项自动化测试通过，类型检查、构建与安装包校验通过；原生页面及现场 DOM 重放的范围单独记录。已安装扩展的完整“分析 → 回传 → 验收 → 营销 → 汇总”及异常流程仍保留为人工验收项。
 
 - [产品介绍](docs/product-introduction.md) · [插件需求](docs/requirements.md)
 - [架构与协议 v2](docs/architecture.md) · [开发与使用](docs/development.md)
@@ -116,14 +122,16 @@ GptWorkBot 是独立项目，非 OpenAI 官方扩展。
 
 A Chrome side-panel extension for individual developers. Give the supervisor chat a goal, review the plan and results in the sidebar, and let roles continue in dependency order. Keep existing project context and responsibilities. No additional API key or separate coordination backend is required.
 
-**1.0.0 · Chrome 120+ · Chinese / English · Existing ChatGPT login · Testing release**
+**1.1.0 · Chrome 120+ · Chinese / English · Existing ChatGPT login · Testing release**
 
-[简体中文](#gptworkbot) · [Download](https://github.com/dickenson258/GptWorkBot/releases/tag/v1.0.0) · [Getting started](#getting-started) · [Documentation](docs/README.en.md)
+[简体中文](#gptworkbot) · [Download](https://github.com/dickenson258/GptWorkBot/releases/tag/v1.1.0) · [Getting started](#getting-started) · [Documentation](docs/README.en.md)
+
+[Product website](https://dickenson258.github.io/GptWorkBot/): automatically uses Chinese for a Chinese browser preference and English otherwise. Switch languages manually and remember your choice. The repository README keeps its same-page bilingual links.
 
 <details>
 <summary>Page failed to load?</summary>
 
-If GitHub's file preview shows “Error loading page”, read the [English section on this page](#english) or download the [offline bilingual homepage archive](https://github.com/dickenson258/GptWorkBot/releases/download/v1.0.0/gptworkbot-homepage-v1.0.0-2026-10-11.zip).
+If GitHub's file preview shows “Error loading page”, read the [English section on this page](#english) or download the [offline bilingual homepage archive](https://github.com/dickenson258/GptWorkBot/releases/download/v1.1.0/gptworkbot-homepage-v1.1.0-2026-10-11.zip).
 
 </details>
 
@@ -168,7 +176,7 @@ Approving the round does not start marketing early. If analysis needs revision, 
 
 Your account must have access to the ChatGPT project, Work and tools you use. The extension currently loads through Chrome's developer mode and is not listed in the Chrome Web Store.
 
-1. Download `gptworkbot-1.0.0.zip` from the [1.0.0 Release](https://github.com/dickenson258/GptWorkBot/releases/tag/v1.0.0) and extract it.
+1. Download `gptworkbot-1.1.0.zip` from the [1.1.0 Release](https://github.com/dickenson258/GptWorkBot/releases/tag/v1.1.0) and extract it.
 2. Open `chrome://extensions`, enable Developer mode and choose **Load unpacked**. Select the folder containing `manifest.json`.
 3. Refresh ChatGPT, open the GptWorkBot sidebar and enter an existing project or one of its Work chats.
 4. Choose **Bind conversations → Read current project**. Select a supervisor and members, confirm Work mode, connect the project and import the team. Alternatively, use **Add role** to create roles in that project.
@@ -191,9 +199,13 @@ npm run verify-package
 
 Load `dist/` after building. See [development and operations](docs/development.en.md) for preview commands, role creation and recovery.
 
-### Upgrade to 1.0.0
+### Upgrade to 1.1.0
 
-Update an existing 0.2.x installation in the same extension directory, reload the extension, refresh ChatGPT and reopen the sidebar. The v2 team and tasks are retained. **Recheck conversations** can recover delivered results whose JSON failed because of native file-reference quotes. From a v1 installation, rebind the team and connect the new protocol. The protocol remains v2 and storage remains `gptworkbot-state-v2`.
+Update an existing 0.2.x / 1.0.0 installation in the same extension directory, reload the extension, refresh ChatGPT and reopen the sidebar. The v2 team and tasks are retained. **Recheck conversations** can recover delivered results whose JSON failed because of native file-reference quotes. From a v1 installation, rebind the team and connect the new protocol. The protocol remains v2 and storage remains `gptworkbot-state-v2`.
+
+### What changed in 1.1.0
+
+Complete v2 instructions in `json` code blocks are recognized; supervisor dispatches require plan confirmation. Missed current plans show a reason and a **Read current plan again** action. Review the recovered drafts and approve the round; prerequisites and pause still apply. Continuing a conversation does not automatically dispatch historical plans.
 
 ## Runtime and data
 
@@ -207,7 +219,7 @@ GptWorkBot is an independent project, not an official OpenAI extension.
 
 ## Verification and documentation
 
-1.0.0 publishes the existing v2 implementation. All 273 automated tests, type checking, building and installation-package checks pass. Native-page checks and local replay of observed DOM are recorded separately. Full installed-extension analysis → reporting → acceptance → marketing → summary, including exception handling, remains a manual acceptance item.
+The current 1.1.0 source passes all 302 automated tests, type checking, building and installation-package checks. Native-page checks and local replay of observed DOM are recorded separately. Full installed-extension analysis → reporting → acceptance → marketing → summary, including exception handling, remains a manual acceptance item.
 
 - [Product introduction](docs/product-introduction.en.md) · [Requirements](docs/requirements.en.md)
 - [Architecture and protocol v2](docs/architecture.en.md) · [Development and operations](docs/development.en.md)
