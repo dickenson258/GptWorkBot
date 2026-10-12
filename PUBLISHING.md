@@ -12,6 +12,14 @@
 
 English: Version 1.2.0 ships interface-language prompts, frozen outbound messages, supervisor registry snapshots, English role matching and native readiness-reply recovery. Bilingual READMEs and download links are updated. Existing v2 state and historical archives are retained; the repository README remains the public product page. Local drafts, real chat content and extension state are excluded. This remains a testing release.
 
+### 1.2.0 远端发布结果
+
+- 工程提交 `fbefea5f1522127e081ee9f94345c88a2fae7b2b` 已推送到公共仓库 main，`v1.2.0` 标签指向同一工程提交。[1.2.0 Release](https://github.com/dickenson258/GptWorkBot/releases/tag/v1.2.0) 为已发布的 prerelease。
+- 两份 README、package 与 manifest 的远端内容与本地逐字节一致；产品版本及下载入口为 1.2.0。仓库仍为 public，About 网站地址保持为空。
+- 安装 ZIP：175,019 字节，uploaded，SHA-256 `e19c7f0fa2b9156a038938cd4e7ec2497cd6c9c40a4f6785b5c89a1f59d6ca13`。
+- 首页 ZIP：2,198,852 字节，uploaded，SHA-256 `05fa858045bc73a439c54037c2f42d3526f145a578bb7536ed7de49599710c90`。两份附件的远端 digest 与本地一致。
+- 固定首页快照保留发布前审核记录；本节追加已完成的远端结果，不改写归档或安装包。
+
 ## 恢复展示入口与英文宣传图 · 2026-10-11
 
 用户要求撤回上轮展示入口调整，并在原 README 英文宣传区加入英文产品宣传图。核对发现个人 GitHub 资料页的 blog 一直为空；上轮实际新增的是 GptWorkBot 项目 Pages 和该仓库 About 地址。本次恢复只涉及这两项，宣传回到仓库 README，展示页源码与历史发布包保留。
