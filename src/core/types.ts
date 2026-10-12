@@ -1,3 +1,4 @@
+import type { Locale } from './language';
 export type AgentWorkState = 'idle' | 'running' | 'needs_interaction' | 'unknown';
 export type TaskStatus = 'draft' | 'queued' | 'sending' | 'running' | 'waiting' | 'reported' | 'accepted' | 'cancelled' | 'uncertain';
 export type TaskKind = 'dispatch' | 'create' | 'report' | 'bootstrap';
@@ -24,6 +25,17 @@ export interface PageMessage { id: string; role: 'assistant' | 'user'; text: str
 export interface TaskInput { name: string; fromTask: string; field: 'summary'; required: true }
 export interface ResolvedInput extends TaskInput { attempt: number; summary: string; sourceName: string; sourceUrl: string }
 export interface TaskResult { attempt: number; status: 'completed' | 'needs_interaction'; summary: string; request?: string; reportId: string; sourceName: string; sourceUrl: string; at: number }
+export interface ResultNotice {
+  taskId: string; title: string; attempt: number; status: 'completed' | 'needs_interaction';
+  sourceName: string; sourceUrl: string; summary: string; request?: string;
+  downstream: Array<{id:string; title:string}>;
+}
+export type GeneratedMessage =
+  | {type:'bootstrap'}
+  | {type:'initialization'; supervisor:boolean}
+  | {type:'progress'; taskId:string; attempt:number}
+  | {type:'revision'; taskId:string; attempt:number; guidance:string; previousResult?:string}
+  | {type:'results'; entries:ResultNotice[]};
 export interface Task {
   id: string; roundId: string; kind: TaskKind; senderId: string; targetId: string;
   title: string; instructions: string; context: string; acceptance: string;
@@ -32,16 +44,19 @@ export interface Task {
   projectId?: string; taskKey?: string; dependsOn: string[]; inputs: TaskInput[]; resolvedInputs?: ResolvedInput[];
   attempt: number; acceptedAttempt?: number; resultReportId?: string; resultHistory: TaskResult[];
   newAgentName?: string; newAgentInstructions?: string; newAgentSupervisor?: boolean; createdTabId?: number; pendingAgentId?: string; relatedTaskId?: string;
+  generatedMessage?: GeneratedMessage; promptLocale?: Locale; preparedPrompt?: string;
 }
 export interface Project { id: string; name: string; url: string }
 export interface Settings { mode: 'confirm' | 'auto'; concurrency: number; maxAutoRounds: number }
 export interface LogEntry { id: string; at: number; text: string }
 export interface Store {
   version: 2; project?: Project; agents: Agent[]; tasks: Task[];
+  locale?: Locale;
   settings: Settings; paused: boolean; autoRounds: number; autoRoundIds: string[];
   processed: string[]; events: LogEntry[];
 }
 export type PanelCommand =
+  | { type:'language'; locale:Locale }
   | { type: 'recover_plan'; agentId: string; messageId: string }
   | { type: 'configure'; project: Project }
   | { type: 'bind'; agent: Agent }

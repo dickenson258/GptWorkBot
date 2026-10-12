@@ -105,6 +105,31 @@ describe('version 2 dependent department workflow',()=>{
   it('the supervisor receives version 2 guidance using real project and department routes',()=>{
     const s=plan();const prompt=bootstrapPrompt(s.agents[0],s);expect(prompt).toContain('"version":2');expect(prompt).toContain('"inputs"');expect(prompt).toContain('"projectId":"'+project.id+'"');expect(prompt).toContain('"target":"other"');
   });
+  it.each([
+    ['Marketing','Analysis','other'],
+    ['MARKETING','Market Research','other'],
+    ['宣传推广','竞争分析','other'],
+    ['Marketing','Product team','other'],
+    ['Product team','Analysis','other'],
+    ['Analysis','Marketing','member'],
+    ['Development','Operations','member']
+  ])('routes the dependency example by role rather than member order: %s, %s',(first,second,analysisId)=>{
+    const s=team();s.agents[1].name=first;s.agents[2].name=second;
+    const prompt=bootstrapPrompt(s.agents[0],s);
+    const envelope=parseEnvelope(prompt,true)!;
+    if(!('actions' in envelope)) throw new Error('Expected a supervisor example');
+    expect(envelope.actions[0]).toMatchObject({kind:'dispatch',taskKey:'analysis',target:analysisId});
+    expect(envelope.actions[1]).toMatchObject({kind:'dispatch',taskKey:'marketing',target:analysisId==='other'?'member':'other',dependsOn:['analysis']});
+    propose(s,envelope.actions);applyCommand(s,{type:'approve',ids:s.tasks.map(t=>t.id)});
+    expect(eligibleTasks(s).map(t=>t.targetId)).toEqual([analysisId]);
+  });
+  it('does not assign both example departments to the only bound member',()=>{
+    const s=team();s.agents.splice(2);s.agents[1].name='Marketing';
+    const envelope=parseEnvelope(bootstrapPrompt(s.agents[0],s),true)!;
+    if(!('actions' in envelope)) throw new Error('Expected a supervisor example');
+    expect(envelope.actions[0]).toMatchObject({target:'竞争分析成员标识'});
+    expect(envelope.actions[1]).toMatchObject({target:'member'});
+  });
 });
 
 describe('atomic validation and missing-input protection',()=>{

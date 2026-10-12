@@ -1,0 +1,60 @@
+{
+  "product": "GptWorkBot",
+  "version": "1.2.0",
+  "date": "2026-10-12",
+  "repository": "https://github.com/dickenson258/GptWorkBot",
+  "protocolVersion": 2,
+  "storageKey": "gptworkbot-state-v2",
+  "source": {
+    "name": "gptworkbot-homepage-v1.1.0-2026-10-11.zip",
+    "sha256": "ba2fb52e26742219c32bb180d8df729512409383b8e366dcd5da96d62da92936"
+  },
+  "reviewed": true,
+  "containsRealConversations": false,
+  "files": [
+    {
+      "path": "PUBLISHING.md",
+      "sha256": "ede07a2f4f40417d84eca3131b2ba3851f01aed86fa2c3d2d49d5d0caa213b35"
+    },
+    {
+      "path": "README.en.md",
+      "sha256": "23d031d45a6afa4c01beaccfd43baf5a8431f40bb200ccd21c36e53f0b2f5fd4"
+    },
+    {
+      "path": "README.md",
+      "sha256": "6b396219b73a2d33e13d8a97eefc266ff8c61844690f0cd7fc2c4f5a4725c499"
+    },
+    {
+      "path": "assets/gptworkbot-create-role-en-400.png",
+      "sha256": "3d5dda865430be00a240a7b6c0dd7b7f02e246991d575184297925b046df7520"
+    },
+    {
+      "path": "assets/gptworkbot-create-role-zh-400.png",
+      "sha256": "0cf32acecb270b5ef7602198dad93beef8c04e67bb711e9bb203861505cef2f2"
+    },
+    {
+      "path": "assets/gptworkbot-dependencies-en-400.png",
+      "sha256": "4b75d7a1fcecc7d35c048d747b9aba76ae0a19fc8eed7183430858cef3d87808"
+    },
+    {
+      "path": "assets/gptworkbot-dependencies-zh-400.png",
+      "sha256": "357e499e594f3be2346841c121716a1c50744c8184d12ad30c69502e6616eeaf"
+    },
+    {
+      "path": "assets/gptworkbot-hero-en.png",
+      "sha256": "dc053b5b531192e36f0ea698ccf3f7a9c6056e91c3c7078576b5135948384cbb"
+    },
+    {
+      "path": "assets/gptworkbot-hero.png",
+      "sha256": "923e7c6f821ea6bfa6a85151532df05db6dab855312f6264ebe650d728c3742c"
+    },
+    {
+      "path": "assets/gptworkbot-sidepanel-en-400.png",
+      "sha256": "4221d6aac8d281829472b70458ff07b53253a0b22d1a3331a4634f7692fe654b"
+    },
+    {
+      "path": "assets/gptworkbot-sidepanel-zh-400.png",
+      "sha256": "57c34345d3ec4fb71deb75e9cc4ebc7b29064dfc60f065cbbc0f4317780d1cde"
+    }
+  ]
+}

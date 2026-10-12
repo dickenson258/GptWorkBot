@@ -1,5 +1,17 @@
 # GptWorkBot 首页审核与发布记录
 
+## 1.2.0 发布 · 2026-10-12
+
+按用户要求使用 `npm version minor --no-git-tag-version` 自动递增中间版本位：1.1.0 → **1.2.0**。package、锁文件、manifest、双语 README、当前产品／需求／协议／开发文档及下载入口同步；当前文档基线为 2.3。
+
+本版发布中英文结构提示、发送前保存完整消息和语言、主管任务登记快照、英文角色示例匹配，以及无 Work 最终回复外层时的原生就绪确认读取修复。测试与真实页面只读核对分别记录，未把自动化或页面观察写为完整真实会话验收。详细更新见 [1.2.0 发布说明](docs/releases/v1.2.0.md) 与 [验证记录](docs/verification.md)。
+
+安装包为 `release/gptworkbot-1.2.0.zip`，双语首页固定归档为 `docs/archive/2026-10-12-homepage-v1.2.0/` 和 `release/gptworkbot-homepage-v1.2.0-2026-10-12.zip`。旧包、旧快照及 X 首发记录保持原样。公开内容不含本地录屏草稿、原生诊断截图、扩展存储或真实会话正文。
+
+宣传入口继续使用仓库 README，不恢复此前已撤回的 Pages 部署、仓库 About 网站地址或个人首页配置。协议仍为 v2，存储键不变；已有 v2 团队与任务保留。本版继续作为测试版发布。
+
+English: Version 1.2.0 ships interface-language prompts, frozen outbound messages, supervisor registry snapshots, English role matching and native readiness-reply recovery. Bilingual READMEs and download links are updated. Existing v2 state and historical archives are retained; the repository README remains the public product page. Local drafts, real chat content and extension state are excluded. This remains a testing release.
+
 ## 恢复展示入口与英文宣传图 · 2026-10-11
 
 用户要求撤回上轮展示入口调整，并在原 README 英文宣传区加入英文产品宣传图。核对发现个人 GitHub 资料页的 blog 一直为空；上轮实际新增的是 GptWorkBot 项目 Pages 和该仓库 About 地址。本次恢复只涉及这两项，宣传回到仓库 README，展示页源码与历史发布包保留。

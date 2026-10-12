@@ -6,10 +6,9 @@ const { version } = JSON.parse(await readFile('package.json', 'utf8'));
 await rm(output, { recursive: true, force: true });
 await mkdir(join(output, 'assets'), { recursive: true });
 const html = (await readFile('website/index.html', 'utf8'))
-  .replaceAll('/releases/tag/v1.1.0', `/releases/tag/v${version}`)
+  .replace(/\/releases\/tag\/v\d+\.\d+\.\d+/g, `/releases/tag/v${version}`)
   .replace(/(<span data-version>)[^<]+/, `$1${version}`)
-  .replaceAll('1.1.0 explains', `${version} explains`)
-  .replaceAll('from 1.1.0.', `from ${version}.`);
+  .replace(/\d+\.\d+\.\d+ explains/g, `${version} explains`);
 await writeFile(join(output, 'index.html'), html);
 for (const file of ['style.css', 'language.js', 'content.js']) await copyFile(`website/${file}`, join(output, file));
 for (const file of ['gptworkbot-hero.png', 'gptworkbot-sidepanel-en-400.png', 'gptworkbot-sidepanel-zh-400.png', 'gptworkbot-dependencies-en-400.png', 'gptworkbot-dependencies-zh-400.png']) await copyFile(`assets/${file}`, join(output, 'assets', file));

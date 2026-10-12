@@ -2,7 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { composer, composerText, readPage, sendText, prepareWorkConversation } from '../src/extension/adapter';
 import { parseEnvelope } from '../src/core/protocol';
 import { draftFingerprint, normalizeDraft } from '../src/core/delivery';
-import { project } from './helpers';
+import { project, team } from './helpers';
+import { ingestObservation, makeTask } from '../src/core/engine';
+import { stateFor } from '../src/core/state';
 const url = `${project.url.replace('/project','')}/c/member`;
 beforeEach(() => { document.body.innerHTML = ''; vi.spyOn(Element.prototype, 'getClientRects').mockImplementation(function(this: Element) { return (this.closest('[hidden],.hidden') ? [] : [{}]) as unknown as DOMRectList; }); });
 afterEach(() => { vi.restoreAllMocks(); vi.useRealTimers(); });
@@ -10,6 +12,27 @@ const prompt = '[WT-DELIVERY:token]\n第一行\n\n第三行';
 function receipt(text = prompt) { const m = document.createElement('div'); m.setAttribute('data-message-author-role', 'user'); m.textContent = text; document.body.append(m); }
 async function timedSend(text = prompt) { const pending = sendText(document, url, 'member', text, 'token'); await vi.runAllTimersAsync(); return pending; }
 describe('真实 Work DOM 适配', () => {
+  it.each(['协作已就绪', 'Collaboration ready'])('无 Work 最终回复外层时识别原生就绪确认 %s，并解除连接等待', reply => {
+    const s=team(); s.agents[1].initialized=false;
+    const task=makeTask({kind:'bootstrap',senderId:'lead',targetId:'member',title:'连接成员',instructions:'连接',status:'running',deliveredAt:123});s.tasks=[task];
+    document.body.innerHTML=`<main><div data-talvt-turn-state="complete"><div data-chatgpt-search-unit-key="fallback-turn-5:0:user" data-chatgpt-search-message-ids="receipt">[WT-DELIVERY:${task.deliveryToken}]</div><div><div data-content-search-unit-key="fallback-turn-5:2:assistant" data-chatgpt-search-unit-key="fallback-turn-5:2:assistant" data-chatgpt-search-message-ids="ready ready"><h4 data-conversation-role="assistant">ChatGPT 说：</h4><div><div data-markdown-text-style="assistant-message"><p>${reply}</p></div></div></div></div></div><div contenteditable="true" role="textbox" aria-label="使用 ChatGPT Work"></div></main>`;
+    const page=readPage(document,url);
+    expect(page.messages).toHaveLength(2);expect(page.messages[1]).toMatchObject({id:'ready',text:reply,turnId:'fallback-turn-5',turnComplete:true});
+    s.processed=['member:ready']; // A repeated/restarted observation still settles the known delivery.
+    ingestObservation(s,'member',page);ingestObservation(s,'member',readPage(document,url));
+    expect(task.status).toBe('accepted');expect(s.agents[1].initialized).toBe(true);expect(stateFor(s.agents[1],s).state).toBe('idle');
+    expect(s.events.filter(e=>e.text===`${s.agents[1].name}已连接协作协议`)).toHaveLength(1);
+  });
+  it('无 Work 外层的原生答复仍等待当前轮次完成，不读取思考、工具或明确非最终的节点', () => {
+    document.body.innerHTML='<div data-talvt-turn-state="streaming"><div data-chatgpt-search-unit-key="fallback-turn-5:0:user">连接</div><div data-chatgpt-search-unit-key="fallback-turn-5:1:assistant"><div data-markdown-text-style="assistant-message">思考内容</div></div><div data-chatgpt-search-unit-key="fallback-turn-5:2:assistant"><h4 data-conversation-role="assistant">工具</h4><div data-markdown-text-style="tool-message">工具内容</div></div><div data-local-conversation-final-assistant="false"><div data-chatgpt-search-unit-key="fallback-turn-5:3:assistant"><h4 data-conversation-role="assistant">ChatGPT 说：</h4><div data-markdown-text-style="assistant-message">明确非最终</div></div></div><div data-chatgpt-search-unit-key="fallback-turn-5:4:assistant"><h4 data-conversation-role="assistant">ChatGPT 说：</h4><div data-markdown-text-style="assistant-message">协作已就绪</div></div></div>';
+    const page=readPage(document,url);expect(page.messages.map(m=>m.text)).toEqual(['连接','协作已就绪']);expect(page.messages[1].turnComplete).toBe(false);expect(page.running).toBe(true);
+  });
+  it('无 Work 外层的原生最终答复也保留完整成员成果及 JSON 代码块', () => {
+    const result={version:2,projectId:project.id,taskId:'task',attempt:1,status:'completed',summary:'完整成果第一行\n证据与限制第二行'};
+    document.body.innerHTML=`<div data-talvt-turn-state="complete"><div data-chatgpt-search-unit-key="fallback-turn-5:2:assistant" data-chatgpt-search-message-ids="result result"><h4 data-conversation-role="assistant">ChatGPT 说：</h4><div data-markdown-text-style="assistant-message"><div data-markdown-copy="code-block"><div data-markdown-copy="exclude"><div>work-team</div><button>复制</button></div><code></code></div></div></div></div>`;
+    document.querySelector('code')!.textContent=JSON.stringify(result);
+    expect(parseEnvelope(readPage(document,url).messages[0].text,false)).toEqual(result);
+  });
   it('项目新聊天按钮尚未响应时多次准备也只点击一次', async () => {
     document.body.innerHTML='<main><button>新聊天</button></main>'; const click=vi.fn(); document.querySelector('button')!.onclick=click;
     const actions=new Set<string>(); for(let i=0;i<60;i++) await prepareWorkConversation(document,project.url,actions);

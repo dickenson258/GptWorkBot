@@ -5,6 +5,8 @@ import { stateFor } from '../src/core/state';
 import { uid } from '../src/core/types';
 import { taskPrompt } from '../src/core/protocol';
 import { draftFingerprint } from '../src/core/delivery';
+import { languageStorageKey } from '../src/core/language';
+import { readPage } from '../src/extension/adapter';
 import type { Observation, Store } from '../src/core/types';
 let persisted: Store;
 let listeners: Array<(request: unknown, sender: unknown, respond: (v: unknown) => void) => unknown>;
@@ -35,7 +37,7 @@ beforeEach(() => {
     return { stopped: true };
   });
   vi.stubGlobal('chrome', {
-    storage: { local: { get: vi.fn(async () => ({ 'gptworkbot-state-v2': structuredClone(persisted) })), set: vi.fn(async (data: Record<string, Store>) => { persisted = structuredClone(data['gptworkbot-state-v2']); }) } },
+    storage: { local: { get: vi.fn(async () => ({ 'gptworkbot-state-v2': structuredClone(persisted),[languageStorageKey]:persisted.locale || 'zh-CN' })), set: vi.fn(async (data: Record<string, Store>) => { persisted = structuredClone(data['gptworkbot-state-v2']); }) } },
     runtime: { id: 'extension', getURL: (p: string) => `chrome-extension://extension/${p}`, onMessage: { addListener: (fn: typeof listeners[number]) => listeners.push(fn) }, onInstalled: event() },
     tabs: { query: vi.fn(async (query: { url?: string } = {}) => [...tabData.values()].filter(t => !query.url || t.url.startsWith('https://chatgpt.com/'))), get: vi.fn(async (id: number) => { const tab = tabData.get(id); if (!tab) throw new Error('No tab with id'); return tab; }), create: vi.fn(async ({ url }: { url: string }) => { const id = Math.max(0, ...tabData.keys()) + 1; tabData.set(id, { id, url, windowId: 1, status: 'complete' }); pages.set(id, obs('new', { url })); return tabData.get(id); }), group: vi.fn(async () => 1), sendMessage: send, onUpdated: event(), onRemoved: event() },
     scripting: { executeScript: vi.fn(async () => []) },
@@ -45,6 +47,51 @@ beforeEach(() => {
 afterEach(() => { vi.useRealTimers(); });
 async function boot() { const background = await import('../src/extension/background'); await background.ready; }
 function panel(request: unknown): Promise<{ store: Store; error?: string }> { return new Promise(resolve => { listeners[0](request, { id: 'extension', url: 'chrome-extension://extension/sidepanel.html' }, resolve as (v: unknown) => void); }); }
+describe('outbound interface language integration',()=>{
+  it('keeps the prior language and queue when preference persistence fails',async()=>{
+    persisted.paused=true;await boot();
+    const before=structuredClone(persisted);
+    vi.mocked(chrome.storage.local.set).mockRejectedValueOnce(new Error('Storage write failed'));
+    const result=await panel({type:'command',command:{type:'language',locale:'en'}});
+    expect(result.error).toBe('Storage write failed');expect(persisted).toEqual(before);
+    expect(send.mock.calls.some(([,m])=>m.type==='send')).toBe(false);
+  });
+  it('persists English atomically with the preference and sends English wrappers for queued work',async()=>{
+    persisted.paused=true;
+    const t=makeTask({kind:'dispatch',senderId:'lead',targetId:'member',title:'Positioning',instructions:'用户任务原文',context:'用户资料',acceptance:'用户条件',status:'queued',approved:true});persisted.tasks=[t];
+    await boot();const result=await panel({type:'command',command:{type:'language',locale:'en'}});
+    expect(result.error).toBeUndefined();expect(persisted.locale).toBe('en');
+    expect(chrome.storage.local.set).toHaveBeenCalledWith(expect.objectContaining({[languageStorageKey]:'en','gptworkbot-state-v2':expect.objectContaining({locale:'en'})}));
+    await panel({type:'command',command:{type:'pause',paused:false}});await vi.waitFor(()=>expect(persisted.tasks[0].status).toBe('running'));
+    const text=send.mock.calls.find(([,m])=>m.type==='send')![1].text;
+    expect(text).toContain('Acceptance criteria');expect(text).toContain('Additional material (context only)');expect(text).toContain('用户任务原文');
+    expect(persisted.tasks[0]).toMatchObject({promptLocale:'en',preparedPrompt:text,deliveryToken:t.deliveryToken});
+  });
+  it('connects with English guidance and accepts an English readiness reply',async()=>{
+    persisted.paused=true;persisted.locale='en';persisted.agents[0].initialized=false;await boot();
+    await panel({type:'command',command:{type:'initialize'}});await panel({type:'command',command:{type:'pause',paused:false}});
+    await vi.waitFor(()=>expect(persisted.tasks[0].status).toBe('running'));
+    const text=send.mock.calls.find(([,m])=>m.type==='send')![1].text;
+    expect(text).not.toMatch(/\p{Script=Han}/u);expect(text).toContain('You are the supervisor');
+    pages.set(1,obs('lead',{messages:[{id:'receipt',role:'user',text},{id:'ready-en',role:'assistant',text:'Collaboration ready'}]}));
+    await panel({type:'command',command:{type:'reconcile'}});
+    expect(persisted.agents[0].initialized).toBe(true);expect(persisted.tasks[0].status).toBe('accepted');
+  });
+  it('keeps the prepared English text on retry after switching to Chinese',async()=>{
+    persisted.locale='en';const t=makeTask({kind:'dispatch',senderId:'lead',targetId:'member',title:'Task',instructions:'Execute',status:'queued',approved:true});persisted.tasks=[t];
+    const original=send.getMockImplementation()!;let first=true;
+    send.mockImplementation(async(id,data)=>{
+      if(data.type==='send' && first){first=false;expect(persisted.tasks[0].preparedPrompt).toBe(data.text);return {status:'wait',reason:'Button not ready'};}
+      return original(id,data);
+    });
+    await boot();await vi.waitFor(()=>expect(persisted.tasks[0].status).toBe('waiting'));
+    const text=send.mock.calls.find(([,m])=>m.type==='send')![1].text;
+    await panel({type:'command',command:{type:'language',locale:'zh-CN'}});
+    await panel({type:'command',command:{type:'resume_task',id:t.id}});await vi.waitFor(()=>expect(persisted.tasks[0].status).toBe('running'));
+    expect(send.mock.calls.filter(([,m])=>m.type==='send').map(([,m])=>m.text)).toEqual([text,text]);
+    expect(persisted.locale).toBe('zh-CN');expect(persisted.tasks[0].promptLocale).toBe('en');
+  });
+});
 describe('漏登记主管计划的安全恢复', () => {
   const missed = () => obs('lead',{turnIndex:9,messages:[{id:'missed-plan',role:'assistant' as const,turnComplete:true,text:fence({version:2,projectId:project.id,actions:[{kind:'dispatch',target:'member',title:'首发后的增长方案',instructions:'制定下一轮宣传计划'}]})}]});
   it('读取主管最新快照后只创建草稿；自动模式也不发送或准备成员页面', async () => {
@@ -64,6 +111,23 @@ describe('漏登记主管计划的安全恢复', () => {
   });
 });
 describe('持久后台调度集成', () => {
+  it('重新核对无 Work 最终外层的原生确认后解除逐个连接，原初始化不重发', async () => {
+    const visibility=vi.spyOn(Element.prototype,'getClientRects').mockReturnValue([{}] as unknown as DOMRectList);
+    try {
+      persisted.agents[1].initialized=false;persisted.agents[2].initialized=false;
+      const current=makeTask({kind:'bootstrap',senderId:'lead',targetId:'member',title:'连接成员',instructions:'连接',status:'running',deliveredAt:123,approved:true});
+      const next=makeTask({kind:'bootstrap',senderId:'lead',targetId:'other',title:'连接下一成员',instructions:'连接',status:'queued',approved:true});persisted.tasks=[current,next];
+      document.body.innerHTML=`<div data-talvt-turn-state="streaming"><div data-chatgpt-search-unit-key="fallback-turn-5:0:user" data-chatgpt-search-message-ids="receipt">[WT-DELIVERY:${current.deliveryToken}]</div><div data-chatgpt-search-unit-key="fallback-turn-5:2:assistant" data-chatgpt-search-message-ids="ready ready"><h4 data-conversation-role="assistant">ChatGPT 说：</h4><div data-markdown-text-style="assistant-message"><p>协作已就绪</p></div></div></div><div contenteditable="true" role="textbox" aria-label="使用 ChatGPT Work"></div>`;
+      pages.set(2,readPage(document,obs('member').url));await boot();
+      expect(persisted.tasks[0].status).toBe('running');expect(persisted.tasks[1].status).toBe('queued');expect(send.mock.calls.some(([,m])=>m.type==='send')).toBe(false);
+      document.querySelector('[data-talvt-turn-state]')!.setAttribute('data-talvt-turn-state','complete');pages.set(2,readPage(document,obs('member').url));
+      await panel({type:'command',command:{type:'reconcile'}});
+      await vi.waitFor(()=>expect(persisted.tasks[1].status).toBe('running'));
+      expect(persisted.tasks[0]).toMatchObject({status:'accepted',deliveryToken:current.deliveryToken,deliveredAt:123});expect(persisted.agents[1].initialized).toBe(true);
+      await panel({type:'command',command:{type:'reconcile'}});
+      expect(send.mock.calls.filter(([,m])=>m.type==='send').map(([id])=>id)).toEqual([3]);expect(chrome.tabs.create).not.toHaveBeenCalled();
+    } finally { visibility.mockRestore();document.body.innerHTML=''; }
+  });
   it('重启后核对已去重的初始化回复，解除执行中并连接协议，不重发消息', async () => {
     persisted.paused=true; persisted.agents[0].initialized=false;
     const t=makeTask({kind:'bootstrap',senderId:'lead',targetId:'lead',title:'连接项目经理',instructions:'连接',status:'running',deliveredAt:123}); persisted.tasks=[t]; persisted.processed=['lead:done'];
@@ -438,10 +502,10 @@ function dependentTasks(ready=false) {
   return {a,m};
 }
 describe('persistent dependency scheduling',()=>{
-  it('uses only the v2 key and leaves old storage untouched',async()=>{
+  it('uses the v2 team key and language preference, leaving old storage untouched',async()=>{
     const legacy={...team(),version:1};Object.assign(chrome.storage.local,{get:vi.fn(async()=>({'work-team-state-v1':legacy}))});await boot();
-    expect(chrome.storage.local.get).toHaveBeenCalledWith('gptworkbot-state-v2');expect(persisted.version).toBe(2);expect(persisted.agents).toEqual([]);expect(chrome.tabs.create).not.toHaveBeenCalled();expect(send.mock.calls.filter(([,m])=>m.type==='send')).toHaveLength(0);
-    for(const [write] of vi.mocked(chrome.storage.local.set).mock.calls) expect(Object.keys(write)).toEqual(['gptworkbot-state-v2']);
+    expect(chrome.storage.local.get).toHaveBeenCalledWith(['gptworkbot-state-v2',languageStorageKey]);expect(persisted.version).toBe(2);expect(persisted.agents).toEqual([]);expect(chrome.tabs.create).not.toHaveBeenCalled();expect(send.mock.calls.filter(([,m])=>m.type==='send')).toHaveLength(0);
+    for(const [write] of vi.mocked(chrome.storage.local.set).mock.calls) expect(Object.keys(write).every(key=>['gptworkbot-state-v2',languageStorageKey].includes(key))).toBe(true);
   });
   it('does not open marketing until analysis is reported and accepted, and sends the complete input',async()=>{
     const {a,m}=dependentTasks();tabData.delete(3);pages.delete(3);persisted.agents[2].tabId=undefined;

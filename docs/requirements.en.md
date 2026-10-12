@@ -4,9 +4,9 @@
 
 | Document information | Value |
 | --- | --- |
-| Document version | `2.2` |
-| Product baseline | `1.1.0` |
-| Recorded | October 11, 2026 · Asia/Shanghai |
+| Document version | `2.3` |
+| Product baseline | `1.2.0` |
+| Recorded | October 12, 2026 · Asia/Shanghai |
 | Target platform | Chrome Manifest V3, minimum Chrome 120 |
 | Target users | Individual developers using ChatGPT projects and Work |
 | Current phase | Implemented and under version testing; complete real collaboration flow awaiting acceptance |
@@ -289,6 +289,7 @@ Acceptance criteria:
 Acceptance criteria:
 
 - Provide 中文 / English switching in the sidebar and role form. Localize buttons, statuses, forms, system reasons, and activity.
+- Use the same preference for generated connection guidance, protocol examples, role creation, task wrappers, prerequisite labels, result routing, revision guidance and progress checks. Preserve names, responsibilities, user instructions and complete results; keep JSON fields and WT identifiers unchanged. Save the full message and language before sending. Switching affects unprepared new messages; prepared retries and restarts reuse the original text and identifier.
 - Default to Simplified Chinese or English according to browser language. Save the choice separately and restore it after reload or restart without changing team records or run settings.
 - Preserve entered role fields across switching. Names, responsibilities, task content, results, and native page messages retain their original text.
 - Include Chinese and English extension descriptions and action tooltips. Provide separate, mutually linked Markdown product introductions and requirements.
@@ -311,7 +312,7 @@ Acceptance criteria:
 - Member results, supervisor acceptance and revision guidance identify the current attempt. Revision increments it, preserves history and invalidates older results/acceptance. New results must be reported and accepted again.
 - Show prerequisite tasks, input sources, attempt and completion/delivery/acceptance waiting reasons. Normal waiting is green and actionable issues yellow, including before the downstream page is opened.
 - Draft prerequisites are editable with automatic mappings and cycle validation; approved relationships are fixed. Unlocking does not request approval again or count as a new automatic round.
-- Use gptworkbot-state-v2 only; retain old storage inactive. Rebind and connect the new protocol when upgrading from v1; updates from 0.2.x / 1.0.0 to 1.1.0 retain the v2 team and queue. Do not implement arbitrary predicates, artifact-field extraction or external file transfer.
+- Use gptworkbot-state-v2 only; retain old storage inactive. Rebind and connect the new protocol when upgrading from v1; updates from 0.2.x / 1.0.0 / 1.1.0 to 1.2.0 retain the v2 team and queue. Do not implement arbitrary predicates, artifact-field extraction or external file transfer.
 
 ### FR-15: Optional website language selection (currently unpublished)
 
@@ -376,7 +377,7 @@ The basic business flow is `draft → queued → sending → running → reporte
 
 ### 7.1 Current validation baseline
 
-For `1.1.0`: all 302 tests across 16 files pass, together with strict type checking, building, and installation ZIP integrity checks.
+For `1.2.0`: all 334 tests across 18 files pass, together with strict type checking, building, and installation ZIP integrity checks.
 
 | Area | Current evidence |
 | --- | --- |

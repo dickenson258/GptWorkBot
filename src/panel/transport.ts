@@ -4,6 +4,7 @@ import type { PanelCommand, Store, Agent } from '../core/types';
 import { readTab, isConnectionError, backgroundConnectionMessage } from '../extension/connection';
 import { mergeConversations } from '../core/conversations';
 import type { ProjectDiscovery } from '../core/conversations';
+import { normalizeLocale, browserLocale, languageStorageKey } from '../core/language';
 export const preview = typeof chrome === 'undefined' || !chrome.runtime?.id;
 export interface TabInfo { id?: number; url?: string; title?: string; active?: boolean }
 export interface Overview { store: Store; tabs: TabInfo[] }
@@ -36,7 +37,10 @@ async function request(data: unknown, retrySafe = false): Promise<Overview> {
   }
 }
 export async function overview(): Promise<Overview> {
-  if (preview) { demo.agents.forEach(a => { if (a.observation) a.observation.observedAt = Date.now(); }); return { store: structuredClone(demo), tabs: [] }; }
+  if (preview) {
+    try { demo.locale=normalizeLocale(localStorage.getItem(languageStorageKey)) || browserLocale(); } catch { demo.locale=browserLocale(); }
+    demo.agents.forEach(a => { if (a.observation) a.observation.observedAt = Date.now(); }); return { store: structuredClone(demo), tabs: [] };
+  }
   return request({ type: 'overview' }, true);
 }
 export async function command(command: PanelCommand): Promise<Overview> {

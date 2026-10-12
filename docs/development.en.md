@@ -25,7 +25,7 @@ Language precedence is `?lang=zh` / `?lang=en`, a saved manual preference, then 
 ## Installation
 
 1. Open `chrome://extensions` in Chrome and enable Developer mode.
-2. Click “Load unpacked” and select this project’s **`dist` directory**. Alternatively, extract `release/gptworkbot-1.1.0.zip` and select the folder containing `manifest.json`.
+2. Click “Load unpacked” and select this project’s **`dist` directory**. Alternatively, extract `release/gptworkbot-1.2.0.zip` and select the folder containing `manifest.json`.
 3. Refresh open ChatGPT pages and click the GptWorkBot icon to open the sidebar.
 4. Open your existing project or one of its Work conversations. Use “Bind conversations” → “Read current project” to show the batch role list immediately, or enter the project home URL manually.
 5. Select conversations, designate one supervisor, and confirm Work mode. Click “Connect project”; the panel stays open and keeps your choices. Then import the team. Individual binding is also available.
@@ -48,13 +48,15 @@ For ZIP installations, update files in the same extension directory before reloa
 
 Choose 中文 or English in the sidebar header or role form. The first selection follows your browser language; later visits retain your preference. Labels, statuses, system messages, and activity use the selected language. Names, responsibilities, task instructions, results, and native page messages retain their original text. Language preferences are stored separately from the team and queue.
 
-## Upgrade to 1.1.0
+## Upgrade to 1.2.0
 
-This publication uses protocol v2 and the existing gptworkbot-state-v2 storage. Updating an existing 0.2.x / 1.0.0 installation in the same extension directory retains the team and tasks. Reload the extension, refresh ChatGPT and recheck conversations. From a v1 installation, rebind and connect the team. See the verification record for automated and real-session coverage.
+This publication uses protocol v2 and the existing gptworkbot-state-v2 storage. Updating an existing 0.2.x / 1.0.0 / 1.1.0 installation in the same extension directory retains the team and tasks. Reload the extension, refresh ChatGPT and recheck conversations. From a v1 installation, rebind and connect the team. See the verification record for automated and real-session coverage.
+
+Version 1.2.0 fixes connections stuck waiting after a role has replied that collaboration is ready. After upgrading, choose **Recheck conversations** to read the existing reply; no initialization resend is needed. The interface language also controls structured prompts sent to roles, while prepared retries retain their original language. See the [release notes](releases/v1.2.0.md).
 
 ## Usage
 
-If a complete v2 `json` instruction has no queued task, reload the updated local extension, reopen the panel and choose “Recheck conversations.” A missed plan shows its reason. Check the supervisor’s latest reply, choose “Read current plan again,” review the drafts and approve the round. Recovery does not resend the original message, import a registered source or dispatch historical plans. The existing v2 team and results are preserved; the release version is 1.1.0.
+If a complete v2 `json` instruction has no queued task, reload the updated local extension, reopen the panel and choose “Recheck conversations.” A missed plan shows its reason. Check the supervisor’s latest reply, choose “Read current plan again,” review the drafts and approve the round. Recovery does not resend the original message, import a registered source or dispatch historical plans. The existing v2 team and results are preserved; the release version is 1.2.0.
 
 Competitive analysis → full result delivered to supervisor → acceptance of current attempt → marketing receives the report → promotion strategy → supervisor review and summary. See [protocol v2](architecture.en.md).
 

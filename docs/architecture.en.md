@@ -2,7 +2,9 @@
 
 [简体中文](architecture.md) · **English**
 
-Product baseline `1.1.0`, protocol `version: 2`. Read and write only `gptworkbot-state-v2`. Updates from 0.2.x / 1.0.0 to 1.1.0 retain the v2 team and queue. Upgrades from v1 require rebinding the team and connecting collaboration; old storage is retained without migration or dispatch, and v1 messages are rejected.
+Product baseline `1.2.0`, protocol `version: 2`. Read and write only `gptworkbot-state-v2`. Updates from 0.2.x / 1.0.0 / 1.1.0 to 1.2.0 retain the v2 team and queue. Upgrades from v1 require rebinding the team and connecting collaboration; old storage is retained without migration or dispatch, and v1 messages are rejected.
+
+The sidebar synchronizes its language preference through a trusted background command. The background atomically saves `gptworkbot-ui-language` and `locale` in the v2 state, and restores the preference at startup. Structured `generatedMessage` data produces Chinese or English system guidance without translating business content. Save `preparedPrompt` and `promptLocale` before the first send; sending, copying and retries after restart reuse this content while still checking dependencies, pause and bindings. Do not append new results to a prepared result-delivery message; create a separate message instead.
 
 ## JSON encoding and native file references
 

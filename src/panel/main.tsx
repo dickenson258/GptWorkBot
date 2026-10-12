@@ -28,7 +28,7 @@ function App() {
   useEffect(() => { document.documentElement.lang = locale; document.title = `GptWorkBot · ${tr('团队组织')}`; }, [locale]);
   const changeLocale = async (next: Locale) => {
     languageChanged.current = true;
-    try { await saveLocale(next); setLocale(next); setNotice(''); setError(''); }
+    try { await saveLocale(next); setLocale(next); setStore(current=>({...current,locale:next})); setNotice(''); setError(''); }
     catch { setError('语言设置保存失败，请重试'); }
   };
   const [store, setStore] = useState<Store>(emptyStore);

@@ -1,6 +1,7 @@
 import { applyCommand, ingestObservation, makeTask, recoverSupervisorPlan } from '../core/engine';
 import { activeBootstrap, eligibleTasks } from '../core/state';
-import { bootstrapPrompt, taskPrompt, creationPrompt } from '../core/protocol';
+import { bootstrapPrompt, prepareTaskPrompt } from '../core/protocol';
+import { browserLocale, languageStorageKey, normalizeLocale } from '../core/language';
 import { addLog, conversationId, conversationRouteId, emptyStore, projectIdFromUrl, uid, validCreationUrl, storageKey } from '../core/types';
 import type { Agent, Observation, PanelCommand, Store, Task } from '../core/types';
 import { waitForPageReady, PageLoadingTimeout, readTab, isConnectionError, pageConnectionMessage } from './connection';
@@ -16,20 +17,21 @@ const openingTabs = new Map<string, Promise<number>>();
 const closedTabs = new Set<number>();
 const attempting = new Set<string>();
 const namingActive = new Set<string>();
-const loaded = chrome.storage.local.get(KEY).then(async data => {
+const loaded = chrome.storage.local.get([KEY,languageStorageKey]).then(async data => {
   await chrome.storage.local.setAccessLevel?.({ accessLevel: 'TRUSTED_CONTEXTS' });
   state = data[KEY]?.version === 2 ? data[KEY] as Store : emptyStore();
+  state.locale=normalizeLocale(data[languageStorageKey]) || normalizeLocale(state.locale) || browserLocale();
   state.agents.forEach(a => { if (a.conversationNameStatus === 'renaming') a.conversationNameStatus = 'pending'; });
   state.agents.forEach(a => { if (a.observation) a.observation.connected = false; });
   state.tasks.filter(t => t.status === 'sending').forEach(t => { t.status = 'uncertain'; t.reason = '后台已恢复，请核对发送回执'; });
-  await chrome.storage.local.set({ [KEY]: state });
+  await chrome.storage.local.set({ [KEY]: state, [languageStorageKey]:state.locale });
 });
 function transaction<T>(fn: (store: Store) => T): Promise<T> {
   const next = chain.then(async () => {
     await loaded;
     const draft = structuredClone(state);
     const result = fn(draft);
-    await chrome.storage.local.set({ [KEY]: draft });
+    await chrome.storage.local.set({ [KEY]: draft, ...(draft.locale!==state.locale ? {[languageStorageKey]:draft.locale} : {}) });
     state = draft;
     return result;
   });
@@ -62,7 +64,7 @@ function observe(s: Store, o: Observation, tabId: number) {
     creation.kind = supervisorRole ? 'bootstrap' : 'dispatch'; creation.targetId = id; creation.status = 'running'; creation.deliveredAt = Date.now(); creation.reason = undefined;
     if (supervisorRole) creation.senderId = id;
     const supervisor = s.agents.find(a => a.supervisor);
-    if (supervisor && !supervisorRole) s.tasks.push(makeTask({ projectId:s.project!.id, kind: 'bootstrap', senderId: supervisor.id, targetId: supervisor.id, title: '同步新成员路由', instructions: bootstrapPrompt(supervisor, s), approved: true, status: 'queued' }));
+    if (supervisor && !supervisorRole) s.tasks.push(makeTask({ projectId:s.project!.id, kind: 'bootstrap', senderId: supervisor.id, targetId: supervisor.id, title: '同步新成员路由', instructions: bootstrapPrompt(supervisor, s), generatedMessage:{type:'bootstrap'}, approved: true, status: 'queued' }));
     addLog(s, `已在项目中创建${supervisorRole ? '主管' : '成员'}：${agent.name}`);
   }
   if (id) {
@@ -191,6 +193,14 @@ async function liveDispatch(id: string) {
   if (!dependencyState(task,s).ready) { await transaction(s => { const t=s.tasks.find(t=>t.id===id);if(t?.status==='sending'){t.status='queued';t.reason=dependencyState(t,s).reason;} });return; }
   return { store: s, task };
 }
+async function prepareDelivery(id:string) {
+  await transaction(s=>{
+    const task=s.tasks.find(t=>t.id===id);
+    if(task?.status==='sending' && !s.paused && dependencyState(task,s).ready) prepareTaskPrompt(task,s);
+  });
+  // Recheck pause, bindings and dependencies after persisting, before sending.
+  return liveDispatch(id);
+}
 async function dispatch(task: Task) {
   active.add(task.id);
   let attempted = false;
@@ -223,9 +233,9 @@ async function dispatch(task: Task) {
         await new Promise(r => setTimeout(r, 250));
       }
       if (!prepared?.ready) throw new Error(prepared?.reason || '新会话尚未就绪，请打开标签页选择 Work 后重试发送');
-      const live = await liveDispatch(task.id); if (!live) return;
+      const live = await prepareDelivery(task.id); if (!live) return;
       const s = live.store; const t = live.task;
-      const text = creationPrompt(t, s);
+      const text = t.preparedPrompt!;
       attempted = true;
       attempting.add(task.id);
       const outcome = await message<{ status: string; reason?: string }>(tabId, { type: 'send', agentId: `project:${s.project!.id}`, text, deliveryToken: t.deliveryToken });
@@ -238,11 +248,11 @@ async function dispatch(task: Task) {
       await transaction(s => { const t = s.tasks.find(t => t.id === task.id); if (t?.status === 'sending') t.reason = '等待会话加载完成与输入区就绪'; });
       const page = await waitForPageReady(tabId, agent.id, { shouldContinue: async () => Boolean(await liveDispatch(task.id)) });
       if (conversationId(page.url) !== agent.id) throw new Error('目标页面已切换，请重新核对会话');
-      const live = await liveDispatch(task.id); if (!live) return;
+      const live = await prepareDelivery(task.id); if (!live) return;
       const current = live.task;
       attempted = true;
       attempting.add(task.id);
-      const outcome = await message<{ status: string; reason?: string }>(tabId, { type: 'send', agentId: agent.id, text: taskPrompt(current,live.store), deliveryToken: current.deliveryToken });
+      const outcome = await message<{ status: string; reason?: string }>(tabId, { type: 'send', agentId: agent.id, text: current.preparedPrompt!, deliveryToken: current.deliveryToken });
       await transaction(s => {
         const t = s.tasks.find(t => t.id === task.id)!;
         if (t.status !== 'sending') return;

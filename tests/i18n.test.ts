@@ -16,15 +16,15 @@ describe('interface language preferences', () => {
     await saveLocale('zh-CN'); expect(initialLocale()).toBe('zh-CN');
     await saveLocale('en'); expect(await readLocale()).toBe('en');
   });
-  it('saves only the separate language key, preserving the team store', async () => {
-    const set = vi.fn(async () => {});
-    vi.stubGlobal('chrome', { runtime: {id: 'extension'}, storage: { local: {set, get: vi.fn(async () => ({[languageStorageKey]: 'en'}))} } });
+  it('synchronizes the interface preference through the trusted background command', async () => {
+    const sendMessage = vi.fn(async () => ({store:{locale:'zh-CN'}}));
+    vi.stubGlobal('chrome', { runtime: {id: 'extension',sendMessage}, storage: { local: {get: vi.fn(async () => ({[languageStorageKey]: 'en'}))} } });
     await saveLocale('zh-CN');
-    expect(set).toHaveBeenCalledExactlyOnceWith({[languageStorageKey]: 'zh-CN'});
+    expect(sendMessage).toHaveBeenCalledExactlyOnceWith({type:'command',command:{type:'language',locale:'zh-CN'}});
     expect(await readLocale()).toBe('en');
   });
   it('ignores invalid saved values and reports write failures', async () => {
-    vi.stubGlobal('chrome', { runtime: {id: 'extension'}, storage: {local: {get: vi.fn(async () => ({[languageStorageKey]: 'fr'})), set: vi.fn(async () => {throw new Error('storage failed');})}} });
+    vi.stubGlobal('chrome', { runtime: {id: 'extension',sendMessage:vi.fn(async()=>{throw new Error('storage failed');})}, storage: {local: {get: vi.fn(async () => ({[languageStorageKey]: 'fr'}))}} });
     expect(await readLocale()).toBe(browserLocale());
     await expect(saveLocale('en')).rejects.toThrow('storage failed');
   });

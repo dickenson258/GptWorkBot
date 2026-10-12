@@ -6,14 +6,14 @@
 
 A Chrome side-panel extension for individual developers. Give the supervisor chat a goal, review the plan and results in the sidebar, and let roles continue in dependency order. Keep existing project context and responsibilities. No additional API key or separate coordination backend is required.
 
-**1.1.0 · Chrome 120+ · Chinese / English · Existing ChatGPT login · Testing release**
+**1.2.0 · Chrome 120+ · Chinese / English · Existing ChatGPT login · Testing release**
 
-[简体中文](https://github.com/dickenson258/GptWorkBot#readme) · [Download](https://github.com/dickenson258/GptWorkBot/releases/tag/v1.1.0) · [Getting started](#getting-started) · [Documentation](docs/README.en.md)
+[简体中文](https://github.com/dickenson258/GptWorkBot#readme) · [Download](https://github.com/dickenson258/GptWorkBot/releases/tag/v1.2.0) · [Getting started](#getting-started) · [Documentation](docs/README.en.md)
 
 <details>
 <summary>Page failed to load?</summary>
 
-If GitHub's file preview shows “Error loading page”, read the [English section on the repository homepage](https://github.com/dickenson258/GptWorkBot#english) or download the [offline bilingual homepage archive](https://github.com/dickenson258/GptWorkBot/releases/download/v1.1.0/gptworkbot-homepage-v1.1.0-2026-10-11.zip).
+If GitHub's file preview shows “Error loading page”, read the [English section on the repository homepage](https://github.com/dickenson258/GptWorkBot#english) or download the [offline bilingual homepage archive](https://github.com/dickenson258/GptWorkBot/releases/download/v1.2.0/gptworkbot-homepage-v1.2.0-2026-10-12.zip).
 
 </details>
 
@@ -58,7 +58,7 @@ Approving the round does not start marketing early. If analysis needs revision, 
 
 Your account must have access to the ChatGPT project, Work and tools you use. The extension currently loads through Chrome's developer mode and is not listed in the Chrome Web Store.
 
-1. Download `gptworkbot-1.1.0.zip` from the [1.1.0 Release](https://github.com/dickenson258/GptWorkBot/releases/tag/v1.1.0) and extract it.
+1. Download `gptworkbot-1.2.0.zip` from the [1.2.0 Release](https://github.com/dickenson258/GptWorkBot/releases/tag/v1.2.0) and extract it.
 2. Open `chrome://extensions`, enable Developer mode and choose **Load unpacked**. Select the folder containing `manifest.json`.
 3. Refresh ChatGPT, open the GptWorkBot sidebar and enter an existing project or one of its Work chats.
 4. Choose **Bind conversations → Read current project**. Select a supervisor and members, confirm Work mode, connect the project and import the team. Alternatively, use **Add role** to create roles in that project.
@@ -81,13 +81,18 @@ npm run verify-package
 
 Load `dist/` after building. See [development and operations](docs/development.en.md) for preview commands, role creation and recovery.
 
-### Upgrade to 1.1.0
+### Upgrade to 1.2.0
 
-Update an existing 0.2.x / 1.0.0 installation in the same extension directory, reload the extension, refresh ChatGPT and reopen the sidebar. The v2 team and tasks are retained. **Recheck conversations** can recover delivered results whose JSON failed because of native file-reference quotes. From a v1 installation, rebind the team and connect the new protocol. The protocol remains v2 and storage remains `gptworkbot-state-v2`.
+Update an existing 0.2.x / 1.0.0 / 1.1.0 installation in the same extension directory, reload the extension, refresh ChatGPT and reopen the sidebar. The v2 team and tasks are retained. **Recheck conversations** can recover delivered results whose JSON failed because of native file-reference quotes. From a v1 installation, rebind the team and connect the new protocol. The protocol remains v2 and storage remains `gptworkbot-state-v2`.
 
-### What changed in 1.1.0
+### What changed in 1.2.0
 
-Complete v2 instructions in `json` code blocks are recognized; supervisor dispatches require plan confirmation. Missed current plans show a reason and a **Read current plan again** action. Review the recovered drafts and approve the round; prerequisites and pause still apply. Continuing a conversation does not automatically dispatch historical plans.
+- **Prompts follow the interface language:** connection guidance, role initialization, task labels, input results, member reports and revision prompts support Chinese and English. Role names, user instructions and results retain their original text.
+- **Reliable readiness confirmation:** recognize native final replies without the Work final-answer wrapper, fixing connections stuck waiting after “Collaboration ready.” Recheck existing conversations after upgrading; no initialization resend is needed.
+- **Supervisor and queue alignment:** connection guidance includes the current project's task registry snapshot, and English Analysis/Marketing examples match role names to reduce assumptions about historical delivery.
+- **Consistent send retries:** persist the complete message and language before sending; retries reuse the same content, input snapshot and delivery identifier.
+
+Keep the missed-plan diagnostics and **Read current plan again** action from 1.1.0. Recovery creates drafts for confirmation; prerequisites and pause still apply, and historical plans are not automatically dispatched.
 
 ## Runtime and data
 
@@ -101,7 +106,7 @@ GptWorkBot is an independent project, not an official OpenAI extension.
 
 ## Verification and documentation
 
-The current 1.1.0 source passes all 302 automated tests, type checking, building and installation-package checks. Native-page checks and local replay of observed DOM are recorded separately. Full installed-extension analysis → reporting → acceptance → marketing → summary, including exception handling, remains a manual acceptance item.
+The current 1.2.0 source passes all 334 automated tests, type checking, building and installation-package checks. Native-page checks and local replay of observed DOM are recorded separately. Full installed-extension analysis → reporting → acceptance → marketing → summary, including exception handling, remains a manual acceptance item.
 
 - [Product introduction](docs/product-introduction.en.md) · [Requirements](docs/requirements.en.md)
 - [Architecture and protocol v2](docs/architecture.en.md) · [Development and operations](docs/development.en.md)

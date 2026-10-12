@@ -20,7 +20,7 @@
     document.documentElement.lang = locale === 'zh' ? 'zh-CN' : 'en';
     document.title = words.title;
     document.querySelector('meta[name="description"]').content = words.lead;
-    document.querySelectorAll('[data-i18n]').forEach(element => { element.textContent = words[element.dataset.i18n].replaceAll('VERSION', version); });
+    document.querySelectorAll('[data-i18n]').forEach(element => { element.textContent = words[element.dataset.i18n].replaceAll('VERSION', element.dataset.i18n === 'previewNote' ? '1.1.0' : version); });
     document.querySelectorAll('[data-image]').forEach(image => {
       const [file, en, zh] = imageInfo[image.dataset.image];
       image.src = image.dataset.image === 'hero' && locale === 'en' ? 'assets/gptworkbot-hero-en.svg' : `assets/${file.replace('LOCALE', locale === 'zh' ? 'zh' : 'en')}`;

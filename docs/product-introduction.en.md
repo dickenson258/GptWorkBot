@@ -8,13 +8,13 @@ GptWorkBot is a Chrome extension for individual developers. It organizes indepen
 
 | Item | Current status |
 | --- | --- |
-| Product version | `1.1.0` · testing phase |
+| Product version | `1.2.0` · testing phase |
 | Runtime | Chrome Manifest V3 extension with a native side panel |
 | Supported conversations | Independent Work conversations within one ChatGPT project |
 | Connection | Uses your existing signed-in session; no API key needed |
 | Languages | Simplified Chinese / English interface; bilingual product and requirements documents |
 | Storage | Browser extension local storage; no separate backend |
-| Documentation baseline | October 11, 2026 · document version `2.2` |
+| Documentation baseline | October 12, 2026 · document version `2.3` |
 
 ## Why GptWorkBot
 
@@ -99,7 +99,7 @@ You define role names and responsibilities. The extension coordinates conversati
 
 0.2.0 uses protocol v2 and new storage without migrating old tasks. After upgrading, rebind the team and connect collaboration. Old storage remains inactive. This first release excludes arbitrary conditions, structured artifact extraction, and external file transfer.
 
-1. Use the project’s `dist` build or extract `release/gptworkbot-1.1.0.zip`.
+1. Use the project’s `dist` build or extract `release/gptworkbot-1.2.0.zip`.
 2. Enable Developer mode at `chrome://extensions` and load the folder containing `manifest.json`. The minimum supported browser version is Chrome 120.
 3. Refresh your open ChatGPT pages and click the GptWorkBot icon to open the sidebar.
 4. Connect your project and bind existing roles, or use “Add role” to create a team. Confirm the participating conversations use Work mode.
@@ -114,6 +114,8 @@ npm run package
 
 Choose 中文 or English in the sidebar header or role form. The initial selection follows your browser language; later visits retain your choice. Role names, responsibilities, tasks, results, and native page messages remain in their original language.
 
+Connection guidance, initialization, task structure, prerequisite labels, reports and revision prompts sent to roles also follow the interface language. Persist the complete message and language before sending; retries reuse its content and delivery identifier. Switching language affects new, unprepared messages.
+
 The build requires Node.js 20.13 or later. Distribution currently uses local loading; the extension is not published in the Chrome Web Store.
 
 ## Data and operating boundaries
@@ -126,7 +128,7 @@ GptWorkBot is an independent project, not an official OpenAI extension. ChatGPT�
 
 ## Validation status
 
-For `1.1.0`, all 302 automated tests across 16 files pass, together with type checking, building, and installation ZIP integrity checks. Coverage includes dependency chains, revision attempts, frozen inputs, the protocol, queues, states, draft protection, receipt recovery, role creation, naming, initialization scheduling, language preferences, owning-project discovery, and conversation address deduplication.
+For `1.2.0`, all 334 automated tests across 18 files pass, together with type checking, building, and installation ZIP integrity checks. Coverage includes dependency chains, revision attempts, frozen inputs, the protocol, queues, states, draft protection, receipt recovery, role creation, naming, initialization scheduling, language preferences, owning-project discovery, and conversation address deduplication.
 
 Real Work controls and some native operations have been checked. The complete installed-extension flow—supervisor, multiple members, result forwarding, and acceptance—still requires manual acceptance testing. The current version is intended for version testing, with production stability still to be assessed.
 

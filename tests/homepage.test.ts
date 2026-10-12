@@ -43,7 +43,7 @@ describe('GitHub Pages language and publication',()=>{
     expect(doc.querySelector('[data-image="recovery"]')?.getAttribute('alt')).toContain('sample data');
     expect(doc.querySelector('[data-docs]')?.getAttribute('href')).toContain('development.en.md');
     expect(doc.querySelector('[data-readme]')?.getAttribute('href')).toContain('#english');
-    expect(doc.querySelector('[data-release]')?.getAttribute('href')).toContain('/v1.1.0');
+    expect(doc.querySelector('[data-release]')?.getAttribute('href')).toContain(`/v${JSON.parse(readFileSync('package.json','utf8')).version}`);
     expect(dom.window.location.search).toBe('?lang=en');
     const next=page({languages:['zh-CN'],saved:dom.window.localStorage.getItem('gptworkbot-homepage-language')!});
     expect(next.window.document.documentElement.lang).toBe('en');dom.window.close();next.window.close();

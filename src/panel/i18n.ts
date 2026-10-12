@@ -1,11 +1,7 @@
-export type Locale = 'zh-CN' | 'en';
-export const languageStorageKey = 'gptworkbot-ui-language';
-export function normalizeLocale(value: unknown): Locale | undefined {
-  return value === 'zh-CN' || value === 'en' ? value : undefined;
-}
-export function browserLocale(language = navigator.language): Locale {
-  return /^zh(?:-|$)/i.test(language) ? 'zh-CN' : 'en';
-}
+import { browserLocale, languageStorageKey, normalizeLocale } from '../core/language';
+import type { Locale } from '../core/language';
+export { browserLocale, languageStorageKey, normalizeLocale };
+export type { Locale };
 export function initialLocale(): Locale {
   try { return normalizeLocale(localStorage.getItem(languageStorageKey)) || browserLocale(); }
   catch { return browserLocale(); }
@@ -16,7 +12,10 @@ export async function readLocale(): Promise<Locale> {
   return normalizeLocale(saved[languageStorageKey]) || browserLocale();
 }
 export async function saveLocale(locale: Locale): Promise<void> {
-  if (typeof chrome !== 'undefined' && chrome.runtime?.id) await chrome.storage.local.set({ [languageStorageKey]: locale });
+  if (typeof chrome !== 'undefined' && chrome.runtime?.id) {
+    const result = await chrome.runtime.sendMessage({type:'command',command:{type:'language',locale}});
+    if (!result || result.error) throw new Error(result?.error || '语言设置保存失败，请重试');
+  }
   else localStorage.setItem(languageStorageKey, locale);
 }
 

@@ -54,7 +54,16 @@ export function readPage(doc: Document, url: string): Observation {
   const chatChip = [...doc.querySelectorAll('[aria-pressed="true"], [data-mode="chat"]')].filter(visible).find(e => /^(chat|聊天)$/i.test(buttonLabel(e)) || e.getAttribute('data-mode') === 'chat');
   const projectLink = [...doc.querySelectorAll<HTMLAnchorElement>('main a[href], header a[href], [data-testid="conversation-header"] a[href]')].find(a => projectIdFromUrl(a.href));
   const projectId = projectIdFromUrl(url) || (projectLink && projectIdFromUrl(projectLink.href));
-  const messages: PageMessage[] = [...doc.querySelectorAll<HTMLElement>('[data-message-author-role="assistant"], [data-message-author-role="user"], [data-chatgpt-search-unit-key$=":user"], [data-local-conversation-final-assistant="true"] [data-chatgpt-search-unit-key$=":assistant"]')].filter(visible).map((element, i) => {
+  const messages: PageMessage[] = [...doc.querySelectorAll<HTMLElement>('[data-message-author-role="assistant"], [data-message-author-role="user"], [data-chatgpt-search-unit-key$=":user"], [data-chatgpt-search-unit-key$=":assistant"]')].filter(element => {
+    if (!visible(element)) return false;
+    if (element.hasAttribute('data-message-author-role') || element.getAttribute('data-chatgpt-search-unit-key')?.endsWith(':user')) return true;
+    const final = element.closest('[data-local-conversation-final-assistant]');
+    if (final) return final.getAttribute('data-local-conversation-final-assistant') === 'true';
+    // Some native conversation layouts omit the Work final wrapper. Require
+    // both the assistant heading and final-answer body, never all assistant
+    // search units: those can also contain reasoning or tool output.
+    return Boolean(element.querySelector('[data-conversation-role="assistant"]') && element.querySelector('[data-markdown-text-style="assistant-message"]'));
+  }).map((element, i) => {
     const content = element.querySelector<HTMLElement>('.markdown, [data-testid="message-content"]') || element;
     // DOM textContent drops fenced-code delimiters; reconstruct them for protocol parsing.
     const clone = content.cloneNode(true) as HTMLElement;
